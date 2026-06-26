@@ -98,7 +98,6 @@ export default function Slider3D({ onAddToCart }) {
                     scale: style.scale,
                     rotateY: style.rotateY,
                     opacity: style.opacity,
-                    z: style.z,
                   }}
                   transition={{ type: 'spring', stiffness: 260, damping: 28, mass: 0.9 }}
                   onClick={() => centeredOffset !== 0 && setActive(i)}

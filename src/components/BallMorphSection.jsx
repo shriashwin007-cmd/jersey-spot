@@ -236,7 +236,7 @@ export default function BallMorphSection() {
   }, [scrollYProgress]);
 
   const ballScale = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0.7, 1, 1, 0.7]);
-  const ballY = useTransform(scrollYProgress, [0, 1], ['0%', '5%']);
+  const ballY = useTransform(scrollYProgress, [0, 1], [0, 50]);
 
   useBallScene(ballCanvasRef, morphRef);
   useBgScene(bgCanvasRef);

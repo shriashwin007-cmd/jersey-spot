@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring, MotionValue } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 
 function ReelDot({ item, i, total, scrollYProgress }) {
   const start = i / total;
@@ -89,12 +89,11 @@ export default function ScrollReel3D() {
     offset: ['start start', 'end end'],
   });
 
-  // Film strip track X
-  const trackX = useTransform(
-    scrollYProgress,
-    [0, 1],
-    ['0%', `-${(REEL_ITEMS.length - 1) * 100}vw`]
-  );
+  // Film strip track X — pure pixel values, no vw/% strings (WAAPI can't parse them)
+  const trackX = useTransform(scrollYProgress, (v) => {
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    return -(v * (REEL_ITEMS.length - 1) * w);
+  });
   const trackXSpring = useSpring(trackX, { stiffness: 80, damping: 20 });
 
   // Film reel rotation counter
