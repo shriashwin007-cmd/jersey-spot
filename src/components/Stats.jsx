@@ -49,7 +49,7 @@ export default function Stats() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
               whileHover={{ y: -3 }}
-              style={{ '--stat-color': s.color }}
+              style={{}}
             >
               <div className="stat-icon" aria-hidden>{s.icon}</div>
               <div className="stat-value">

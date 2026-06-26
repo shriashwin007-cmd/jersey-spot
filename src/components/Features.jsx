@@ -75,10 +75,10 @@ function FeatureCard({ f, i }) {
   const inView = useInView(ref, { once: true, margin: '-60px' });
 
   return (
+    <div style={{ '--feat-color': f.color, '--feat-bg': f.bg }}>
     <motion.div
       ref={ref}
       className={`feature-card${f.size === 'large' ? ' feature-card-large' : ''}`}
-      style={{ '--feat-color': f.color, '--feat-bg': f.bg }}
       initial={{ opacity: 0, y: 40, scale: 0.97 }}
       animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
       transition={{ duration: 0.55, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
@@ -99,6 +99,7 @@ function FeatureCard({ f, i }) {
         </div>
       )}
     </motion.div>
+    </div>
   );
 }
 

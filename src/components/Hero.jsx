@@ -207,7 +207,7 @@ export default function Hero() {
                   aria-hidden
                   animate={{ rotate: 360 }}
                   transition={{ duration: 12 + i * 2, repeat: Infinity, ease: 'linear' }}
-                  style={{ '--deg': `${deg}deg` }}
+                  style={{ transform: `rotate(${deg}deg) translateY(-40px)` }}
                 />
               ))}
 

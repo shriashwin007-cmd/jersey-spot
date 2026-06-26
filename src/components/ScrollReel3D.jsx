@@ -31,15 +31,15 @@ function ReelCard({ item, i, scrollYProgress }) {
   const rotateY = useTransform(scrollYProgress, [start - 0.15, start, end, end + 0.15], [55, 0, 0, -55]);
   const scale = useTransform(scrollYProgress, [start - 0.1, start + 0.05, end - 0.05, end + 0.1], [0.75, 1, 1, 0.75]);
   const opacity = useTransform(scrollYProgress, [start - 0.12, start + 0.04, end - 0.04, end + 0.12], [0, 1, 1, 0]);
-  const z = useTransform(scrollYProgress, [start, start + 0.05, end - 0.05, end], [-200, 0, 0, -200]);
 
   const scaleS = useSpring(scale, { stiffness: 180, damping: 22 });
   const rotYS = useSpring(rotateY, { stiffness: 150, damping: 20 });
 
   return (
+    <div style={{ '--card-color': item.primary, width: '100vw', flexShrink: 0 }}>
     <motion.div
       className="reel-card"
-      style={{ rotateY: rotYS, scale: scaleS, opacity, z, '--card-color': item.primary }}
+      style={{ rotateY: rotYS, scale: scaleS, opacity }}
     >
       <div className="reel-card-glow" />
       <div className="reel-card-sport-tag">{item.sport}</div>
@@ -78,6 +78,7 @@ function ReelCard({ item, i, scrollYProgress }) {
       {/* Number decoration */}
       <div className="reel-card-num-bg">{item.number}</div>
     </motion.div>
+    </div>
   );
 }
 

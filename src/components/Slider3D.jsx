@@ -85,7 +85,6 @@ export default function Slider3D({ onAddToCart }) {
                   key={item.id}
                   className={`slider3d-card${centeredOffset === 0 ? ' active' : ''}`}
                   style={{
-                    '--jersey-glow': item.primary,
                     zIndex: style.zIndex,
                     pointerEvents: centeredOffset === 0 ? 'auto' : 'none',
                     translateX: '-50%',

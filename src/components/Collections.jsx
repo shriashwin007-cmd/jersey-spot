@@ -103,7 +103,7 @@ export default function Collections({ onAddToCart }) {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.84, y: -10 }}
                 transition={{ duration: 0.35, delay: i * 0.04, ease: [0.22, 1, 0.36, 1] }}
-                style={{ '--jersey-glow': p.primary }}
+                data-jersey-glow={p.primary}
               >
                 <TiltCard>
                   <div className="product-card-img">
