@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, useMotionTemplate } from 'framer-motion';
 
 function ReelDot({ item, i, total, scrollYProgress }) {
   const start = i / total;
@@ -35,11 +35,14 @@ function ReelCard({ item, i, scrollYProgress }) {
   const scaleS = useSpring(scale, { stiffness: 180, damping: 22 });
   const rotYS = useSpring(rotateY, { stiffness: 150, damping: 20 });
 
+  // Transform STRING so framer never routes rotateY through Element.animate (Safari WAAPI crash)
+  const transform = useMotionTemplate`perspective(1400px) rotateY(${rotYS}deg) scale(${scaleS})`;
+
   return (
     <div style={{ '--card-color': item.primary, width: '100vw', flexShrink: 0 }}>
     <motion.div
       className="reel-card"
-      style={{ rotateY: rotYS, scale: scaleS, opacity }}
+      style={{ transform, opacity }}
     >
       <div className="reel-card-glow" />
       <div className="reel-card-sport-tag">{item.sport}</div>

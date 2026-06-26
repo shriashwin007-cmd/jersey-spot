@@ -1,6 +1,83 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, useSpring, useMotionTemplate } from 'framer-motion';
 import JerseySVG from './JerseySVG';
+
+const SPRING = { stiffness: 260, damping: 28, mass: 0.9 };
+
+function SliderCard({ item, style, centeredOffset, active, i, setActive, onAddToCart }) {
+  // Spring-driven motion values — applied via a transform STRING so framer
+  // never routes them through Element.animate() (Safari WAAPI crashes on rotateY).
+  const x = useSpring(style.x, SPRING);
+  const scale = useSpring(style.scale, SPRING);
+  const rotateY = useSpring(style.rotateY, SPRING);
+  const opacity = useSpring(style.opacity, SPRING);
+
+  useEffect(() => {
+    x.set(style.x);
+    scale.set(style.scale);
+    rotateY.set(style.rotateY);
+    opacity.set(style.opacity);
+  }, [style.x, style.scale, style.rotateY, style.opacity, x, scale, rotateY, opacity]);
+
+  const transform = useMotionTemplate`translate(-50%, -50%) translateX(${x}px) scale(${scale}) perspective(1200px) rotateY(${rotateY}deg)`;
+
+  return (
+    <motion.div
+      className={`slider3d-card${centeredOffset === 0 ? ' active' : ''}`}
+      style={{
+        zIndex: style.zIndex,
+        pointerEvents: centeredOffset === 0 ? 'auto' : 'none',
+        top: '50%',
+        left: '50%',
+        transform,
+        opacity,
+      }}
+      onClick={() => centeredOffset !== 0 && setActive(i)}
+    >
+      <div className="slider3d-img">
+        <div className="slider3d-img-glow" />
+        <motion.div
+          whileHover={centeredOffset === 0 ? { scale: 1.06, rotate: 2 } : {}}
+          transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+        >
+          <JerseySVG
+            primary={item.primary}
+            secondary={item.secondary}
+            number={item.number}
+            name={item.team}
+            size={160}
+            pattern={item.pattern}
+          />
+        </motion.div>
+      </div>
+      <div className="slider3d-body">
+        <div className="slider3d-name">{item.name}</div>
+        <div className="slider3d-team">{item.team}</div>
+        <div className="slider3d-footer">
+          <div className="slider3d-price">${item.price}</div>
+          {item.badge && <span className="slider3d-badge">{item.badge}</span>}
+        </div>
+        {centeredOffset === 0 && (
+          <motion.button
+            className="btn-primary"
+            style={{ width: '100%', marginTop: 14, justifyContent: 'center', fontSize: 13, padding: '10px 16px' }}
+            onClick={() => onAddToCart({ name: item.name, team: item.team, price: item.price, primary: item.primary, secondary: item.secondary, number: item.number })}
+            whileTap={{ scale: 0.97 }}
+            whileHover={{ scale: 1.02 }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add to Cart
+          </motion.button>
+        )}
+      </div>
+    </motion.div>
+  );
+}
 
 const featured = [
   { id:1, name:'Elite Pro', team:'FC Champions', price:89, primary:'#c8960a', secondary:'#f5b800', number:'10', badge:'Best Seller', pattern:'gradient' },
@@ -81,68 +158,16 @@ export default function Slider3D({ onAddToCart }) {
               if (!style) return null;
 
               return (
-                <motion.div
+                <SliderCard
                   key={item.id}
-                  className={`slider3d-card${centeredOffset === 0 ? ' active' : ''}`}
-                  style={{
-                    zIndex: style.zIndex,
-                    pointerEvents: centeredOffset === 0 ? 'auto' : 'none',
-                    translateX: '-50%',
-                    translateY: '-50%',
-                    top: '50%',
-                    left: '50%',
-                  }}
-                  animate={{
-                    x: style.x,
-                    scale: style.scale,
-                    rotateY: style.rotateY,
-                    opacity: style.opacity,
-                  }}
-                  transition={{ type: 'spring', stiffness: 260, damping: 28, mass: 0.9 }}
-                  onClick={() => centeredOffset !== 0 && setActive(i)}
-                >
-                  <div className="slider3d-img">
-                    <div className="slider3d-img-glow" />
-                    <motion.div
-                      whileHover={centeredOffset === 0 ? { scale: 1.06, rotate: 2 } : {}}
-                      transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-                    >
-                      <JerseySVG
-                        primary={item.primary}
-                        secondary={item.secondary}
-                        number={item.number}
-                        name={item.team}
-                        size={160}
-                        pattern={item.pattern}
-                      />
-                    </motion.div>
-                  </div>
-                  <div className="slider3d-body">
-                    <div className="slider3d-name">{item.name}</div>
-                    <div className="slider3d-team">{item.team}</div>
-                    <div className="slider3d-footer">
-                      <div className="slider3d-price">${item.price}</div>
-                      {item.badge && <span className="slider3d-badge">{item.badge}</span>}
-                    </div>
-                    {centeredOffset === 0 && (
-                      <motion.button
-                        className="btn-primary"
-                        style={{ width: '100%', marginTop: 14, justifyContent: 'center', fontSize: 13, padding: '10px 16px' }}
-                        onClick={() => onAddToCart({ name: item.name, team: item.team, price: item.price, primary: item.primary, secondary: item.secondary, number: item.number })}
-                        whileTap={{ scale: 0.97 }}
-                        whileHover={{ scale: 1.02 }}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.25 }}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                        </svg>
-                        Add to Cart
-                      </motion.button>
-                    )}
-                  </div>
-                </motion.div>
+                  item={item}
+                  style={style}
+                  centeredOffset={centeredOffset}
+                  active={active}
+                  i={i}
+                  setActive={setActive}
+                  onAddToCart={onAddToCart}
+                />
               );
             })}
           </div>
