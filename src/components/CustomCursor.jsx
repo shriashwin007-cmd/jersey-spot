@@ -28,14 +28,16 @@ export default function CustomCursor() {
     const onDown = () => setClicking(true);
     const onUp = () => setClicking(false);
 
+    // Use mouseover (fires only when the target element changes) instead of
+    // mousemove — running .closest() on every pixel of movement is very costly.
     const checkHover = (e) => {
       const el = e.target;
-      const isInteractive = el.closest('a, button, [role="button"], input, select, textarea, label, .slider3d-card');
+      const isInteractive = el.closest && el.closest('a, button, [role="button"], input, select, textarea, label, .slider3d-card');
       setHovering(!!isInteractive);
     };
 
     document.addEventListener('mousemove', onMove, { passive: true });
-    document.addEventListener('mousemove', checkHover, { passive: true });
+    document.addEventListener('mouseover', checkHover, { passive: true });
     document.addEventListener('mouseleave', onLeave);
     document.addEventListener('mouseenter', onEnter);
     document.addEventListener('mousedown', onDown);
@@ -43,7 +45,7 @@ export default function CustomCursor() {
 
     return () => {
       document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mousemove', checkHover);
+      document.removeEventListener('mouseover', checkHover);
       document.removeEventListener('mouseleave', onLeave);
       document.removeEventListener('mouseenter', onEnter);
       document.removeEventListener('mousedown', onDown);

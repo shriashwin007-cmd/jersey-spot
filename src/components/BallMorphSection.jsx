@@ -114,15 +114,15 @@ function useBallScene(canvasRef, morphRef) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0x000000);
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
     camera.position.z = 3.5;
 
-    const geo = new THREE.SphereGeometry(1.25, 128, 128);
+    const geo = new THREE.SphereGeometry(1.25, 64, 64);
     const mat = new THREE.ShaderMaterial({
       vertexShader: VERTEX,
       fragmentShader: FRAGMENT,
@@ -138,6 +138,14 @@ function useBallScene(canvasRef, morphRef) {
     let raf;
     let currentMorph = 0;
 
+    // Only render while the canvas is actually on-screen.
+    let visible = true;
+    const io = new IntersectionObserver(
+      ([entry]) => { visible = entry.isIntersecting; },
+      { rootMargin: '100px' }
+    );
+    io.observe(canvas);
+
     function resize() {
       const W = canvas.clientWidth;
       const H = canvas.clientHeight;
@@ -152,6 +160,7 @@ function useBallScene(canvasRef, morphRef) {
 
     function animate() {
       raf = requestAnimationFrame(animate);
+      if (!visible || document.hidden) return;
       const elapsed = clock.getElapsedTime();
       // Smooth lerp to target morph
       currentMorph += (morphRef.current - currentMorph) * 0.055;
@@ -166,6 +175,7 @@ function useBallScene(canvasRef, morphRef) {
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      io.disconnect();
       geo.dispose();
       mat.dispose();
       renderer.dispose();
@@ -177,7 +187,9 @@ function useBgScene(canvasRef) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+    // Decorative blurred background — render at low resolution to save GPU.
+    renderer.setPixelRatio(0.7);
     renderer.setClearColor(0x000000);
     const scene = new THREE.Scene();
     const camera = new THREE.Camera();
@@ -194,23 +206,35 @@ function useBgScene(canvasRef) {
     scene.add(new THREE.Mesh(geo, mat));
     const clock = new THREE.Clock();
     let raf;
+    let lastT = 0;
+
+    let visible = true;
+    const io = new IntersectionObserver(
+      ([entry]) => { visible = entry.isIntersecting; },
+      { rootMargin: '100px' }
+    );
+    io.observe(canvas);
 
     function resize() {
       const W = canvas.clientWidth, H = canvas.clientHeight;
       renderer.setSize(W, H, false);
-      uniforms.u_res.value.set(W, H);
+      uniforms.u_res.value.set(canvas.width, canvas.height);
     }
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
     resize();
 
-    function animate() {
+    function animate(t) {
       raf = requestAnimationFrame(animate);
+      if (!visible || document.hidden) return;
+      // Throttle to ~30fps — it's a soft blurred backdrop, 60fps is wasted.
+      if (t - lastT < 33) return;
+      lastT = t;
       uniforms.u_time.value = clock.getElapsedTime();
       renderer.render(scene, camera);
     }
-    animate();
-    return () => { cancelAnimationFrame(raf); ro.disconnect(); geo.dispose(); mat.dispose(); renderer.dispose(); };
+    raf = requestAnimationFrame(animate);
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); io.disconnect(); geo.dispose(); mat.dispose(); renderer.dispose(); };
   }, []);
 }
 
