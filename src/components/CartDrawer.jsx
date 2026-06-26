@@ -66,12 +66,16 @@ export default function CartDrawer({ open, onClose, items, onRemove }) {
                       transition={{ duration: 0.25 }}
                     >
                       <div className="cart-item-img" aria-hidden>
-                        <JerseySVG
-                          primary={item.primary || '#15803D'}
-                          secondary={item.secondary || '#22c55e'}
-                          number={item.number || '10'}
-                          size={56}
-                        />
+                        {item.img ? (
+                          <img src={item.img} alt="" width={56} height={56} style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8 }} />
+                        ) : (
+                          <JerseySVG
+                            primary={item.primary || '#15803D'}
+                            secondary={item.secondary || '#22c55e'}
+                            number={item.number || '10'}
+                            size={56}
+                          />
+                        )}
                       </div>
                       <div className="cart-item-info">
                         <div className="cart-item-name">{item.name}</div>
@@ -81,7 +85,7 @@ export default function CartDrawer({ open, onClose, items, onRemove }) {
                           Qty {item.qty || 1}
                         </div>
                         <div className="cart-item-footer">
-                          <div className="cart-item-price">${item.price}</div>
+                          <div className="cart-item-price">₹{item.price}</div>
                           <button
                             className="cart-item-remove"
                             onClick={() => onRemove(item.id)}

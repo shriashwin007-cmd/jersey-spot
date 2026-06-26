@@ -9,6 +9,7 @@ import Marquee from './components/Marquee';
 import Stats from './components/Stats';
 import Collections from './components/Collections';
 import Slider3D from './components/Slider3D';
+import JerseyGallery from './components/JerseyGallery';
 import BallMorphSection from './components/BallMorphSection';
 import ScrollReel3D from './components/ScrollReel3D';
 import SportShowcase from './components/SportShowcase';
@@ -78,6 +79,11 @@ export default function App() {
 
         {/* 3D CoverFlow featured slider */}
         <Slider3D onAddToCart={addToCart} />
+
+        <div className="divider-glow" />
+
+        {/* Real product photos from the Chennai store (Instagram) */}
+        <JerseyGallery onAddToCart={addToCart} />
 
         <div className="divider-glow" />
 
