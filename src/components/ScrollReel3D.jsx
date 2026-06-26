@@ -1,5 +1,18 @@
 import { useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, MotionValue } from 'framer-motion';
+
+function ReelDot({ item, i, total, scrollYProgress }) {
+  const start = i / total;
+  const end = (i + 1) / total;
+  const scaleX = useTransform(scrollYProgress, [start, end], [1, 2.5]);
+  const opacity = useTransform(scrollYProgress, [start - 0.1, start, end, end + 0.1], [0.3, 1, 1, 0.3]);
+  return (
+    <div className="scroll-reel-dot-wrap">
+      <motion.div className="scroll-reel-dot" style={{ scaleX, opacity }} />
+      <span>{item.sport}</span>
+    </div>
+  );
+}
 import JerseySVG from './JerseySVG';
 
 const REEL_ITEMS = [
@@ -130,22 +143,9 @@ export default function ScrollReel3D() {
 
         {/* Progress dots */}
         <div className="scroll-reel-dots">
-          {REEL_ITEMS.map((item, i) => {
-            const start = i / REEL_ITEMS.length;
-            const end = (i + 1) / REEL_ITEMS.length;
-            return (
-              <div key={item.id} className="scroll-reel-dot-wrap">
-                <motion.div
-                  className="scroll-reel-dot"
-                  style={{
-                    scaleX: useTransform(scrollYProgress, [start, end], [1, 2.5]),
-                    opacity: useTransform(scrollYProgress, [start - 0.1, start, end, end + 0.1], [0.3, 1, 1, 0.3]),
-                  }}
-                />
-                <span>{item.sport}</span>
-              </div>
-            );
-          })}
+          {REEL_ITEMS.map((item, i) => (
+            <ReelDot key={item.id} item={item} i={i} total={REEL_ITEMS.length} scrollYProgress={scrollYProgress} />
+          ))}
         </div>
 
         {/* Scroll hint */}

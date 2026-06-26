@@ -16,13 +16,6 @@ export default function CustomCursor() {
   const ringX = useSpring(mouseX, springCfg);
   const ringY = useSpring(mouseY, springCfg);
 
-  // Trail positions — each one springs after the previous
-  const trailRefs = useRef(
-    Array.from({ length: TRAIL_COUNT }, () => ({
-      x: useMotionValue(-200),
-      y: useMotionValue(-200),
-    }))
-  );
 
   useEffect(() => {
     const onMove = (e) => {
