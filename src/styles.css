@@ -20,9 +20,10 @@
   position: fixed; right: 24px; bottom: 24px; z-index: 9000;
   display: inline-flex; align-items: center; gap: 10px;
   padding: 14px 20px 14px 16px; border-radius: var(--r-pill);
-  background: #1faa54; color: #fff; font-weight: 700; font-size: 14px;
-  box-shadow: 0 14px 40px rgba(31,170,84,0.4);
+  background: var(--wa-green); color: #fff; font-weight: 700; font-size: 14px;
+  box-shadow: 0 14px 40px rgba(14,133,66,0.4);
 }
+.wa-fab:hover { background: var(--wa-green-bright); }
 .wa-fab-label { white-space: nowrap; }
 @media (max-width: 560px) { .wa-fab { padding: 15px; } .wa-fab-label { display: none; } }
 
@@ -189,14 +190,18 @@
 .contact-form-sub { font-size: 0.9rem; color: var(--text-muted); margin: 6px 0 24px; position: relative; }
 .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; position: relative; }
 .field > span { font-size: 13px; font-weight: 600; color: var(--text); }
-.field > span em { color: var(--text-subtle); font-weight: 400; }
+.field > span em { color: var(--text-muted); font-weight: 400; }
 .field input, .field select, .field textarea {
   width: 100%; padding: 13px 15px; font-size: 15px; font-family: inherit;
   color: var(--text); background: var(--bg); border: 1px solid var(--border-strong);
-  border-radius: var(--r-sm); transition: border-color 0.2s, background 0.2s; resize: vertical;
+  border-radius: var(--r-sm); transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; resize: vertical;
 }
 .field input::placeholder, .field textarea::placeholder { color: var(--text-subtle); }
-.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--gold); background: var(--bg-elev); }
+/* outline replaced (not just removed) with an equivalent-visibility focus ring */
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: var(--gold); background: var(--bg-elev);
+  box-shadow: 0 0 0 3px var(--gold-soft);
+}
 .field select option { background: #111; color: #fff; }
 .field-row { display: flex; gap: 14px; }
 .field-row .field { flex: 1; }
@@ -209,11 +214,11 @@
 .footer-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1.4fr; gap: 40px; }
 .footer-logo { height: 46px; width: auto; margin-bottom: 16px; }
 .footer-brand p { color: var(--text-muted); font-size: 0.92rem; max-width: 32ch; }
-.footer-est { color: var(--text-subtle) !important; font-size: 0.8rem !important; margin-top: 8px; }
+.footer-est { color: var(--text-muted) !important; font-size: 0.8rem !important; margin-top: 8px; }
 .footer-col h4 { font-family: var(--font-body); font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 16px; }
 .footer-col a { display: block; color: var(--text-muted); font-size: 0.92rem; padding: 6px 0; transition: color 0.2s; }
 .footer-col a:hover { color: var(--gold-bright); }
-.footer-bottom { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 50px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 0.82rem; color: var(--text-subtle); }
+.footer-bottom { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 50px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 0.82rem; color: var(--text-muted); }
 .footer-heart { color: var(--gold); }
 @media (max-width: 860px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; } .footer-brand { grid-column: 1 / -1; } }
 @media (max-width: 520px) { .footer-grid { grid-template-columns: 1fr; } .footer-bottom { flex-direction: column; text-align: center; } }

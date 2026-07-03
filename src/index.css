@@ -20,11 +20,14 @@
   --gold-line:    rgba(232,185,35,0.22);
   --gold-glow:    rgba(232,185,35,0.30);
 
+  --wa-green:        #0e8542;  /* passes 4.5:1 with white 14px/600 text */
+  --wa-green-bright:  #129950; /* hover only, transient state */
+
   --white:        #ffffff;
   --text:         #f4f2ec;
-  --text-muted:   rgba(244,242,236,0.56);
-  --text-subtle:  rgba(244,242,236,0.30);
-  --text-faint:   rgba(244,242,236,0.14);
+  --text-muted:   rgba(244,242,236,0.56);   /* ~5.9:1 on black — body/secondary text, AA normal-text pass */
+  --text-subtle:  rgba(244,242,236,0.42);   /* ~3.7:1 on black — decorative micro-labels only, not body copy */
+  --text-faint:   rgba(244,242,236,0.14);   /* decorative dividers/ghost numerals only, never text */
 
   --border:       rgba(255,255,255,0.08);
   --border-strong:rgba(255,255,255,0.14);
@@ -162,11 +165,11 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.
 }
 .btn-ghost:hover { border-color: var(--gold-line); background: var(--gold-soft); color: var(--gold-bright); }
 .btn-whatsapp {
-  background: #1faa54;
+  background: var(--wa-green);        /* darkened from brand #25D366 to pass 4.5:1 with white text (was 3.03:1) */
   color: #fff;
-  box-shadow: 0 12px 32px rgba(31,170,84,0.24);
+  box-shadow: 0 12px 32px rgba(14,133,66,0.28);
 }
-.btn-whatsapp:hover { background: #23c460; }
+.btn-whatsapp:hover { background: var(--wa-green-bright); }
 
 .divider {
   height: 1px;
