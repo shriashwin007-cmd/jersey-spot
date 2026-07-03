@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import CompareSlider from './CompareSlider';
 import { waLink } from '../config';
 
 const MODES = {
   embroidered: {
     label: 'Embroidered',
     price: 'from ₹1,499',
-    threadFill: '#e8b923',
     points: [
       'Names, numbers & crests stitched thread-by-thread',
       'Raised, textured, premium pro-club feel',
@@ -18,7 +18,6 @@ const MODES = {
   printed: {
     label: 'Printed',
     price: 'from ₹899',
-    threadFill: '#dfe3ea',
     points: [
       'Full-colour sublimation & heat-press printing',
       'Feather-light with a smooth flat finish',
@@ -28,6 +27,40 @@ const MODES = {
     msg: 'Hi Jersey Spot! Tell me more about PRINTED jerseys.',
   },
 };
+
+function JerseyBase({ children }) {
+  return (
+    <svg viewBox="0 0 200 220" width="100%" height="100%">
+      <defs>
+        <linearGradient id="embFab" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#1a1a1d" />
+          <stop offset="100%" stopColor="#0a0a0b" />
+        </linearGradient>
+      </defs>
+      <path d="M70 26 L48 38 L26 70 L46 88 L60 76 V196 H140 V76 L154 88 L174 70 L152 38 L130 26 Q100 46 70 26Z" fill="url(#embFab)" stroke="#e8b923" strokeWidth="2" />
+      <path d="M80 30 Q100 44 120 30" fill="none" stroke="#e8b923" strokeWidth="2" />
+      {children}
+    </svg>
+  );
+}
+
+function EmbroideredJersey() {
+  return (
+    <JerseyBase>
+      <circle cx="100" cy="103" r="40" fill="none" stroke="#e8b923" strokeWidth="1.4" strokeDasharray="4 5" opacity="0.55" />
+      <text x="100" y="120" fontSize="52" fontWeight="800" fontFamily="Inter, sans-serif" fill="#e8b923" stroke="#b8901a" strokeWidth="1.2" textAnchor="middle">10</text>
+      <text x="100" y="164" fontSize="16" fontWeight="700" letterSpacing="3" fontFamily="Inter, sans-serif" fill="#e8b923" textAnchor="middle">CHENNAI</text>
+    </JerseyBase>
+  );
+}
+function PrintedJersey() {
+  return (
+    <JerseyBase>
+      <text x="100" y="120" fontSize="52" fontWeight="800" fontFamily="Inter, sans-serif" fill="#dfe3ea" textAnchor="middle">10</text>
+      <text x="100" y="164" fontSize="16" fontWeight="700" letterSpacing="3" fontFamily="Inter, sans-serif" fill="#dfe3ea" textAnchor="middle">CHENNAI</text>
+    </JerseyBase>
+  );
+}
 
 export default function Embroidery() {
   const [mode, setMode] = useState('embroidered');
@@ -46,7 +79,7 @@ export default function Embroidery() {
         >
           <span className="eyebrow">The Craft</span>
           <h2 className="section-title">Two finishes,<br /><span className="g">one obsession</span></h2>
-          <p className="section-lead">Pick the finish that fits your team. Tap to compare how we bring your kit to life.</p>
+          <p className="section-lead">Drag the slider on the right to compare — or pick a finish below for the full details.</p>
 
           <div className="emb-toggle" role="tablist" aria-label="Jersey finish">
             {Object.keys(MODES).map((k) => (
@@ -87,7 +120,7 @@ export default function Embroidery() {
           </div>
         </motion.div>
 
-        {/* interactive jersey preview */}
+        {/* drag-to-compare jersey preview */}
         <motion.div
           className="emb-preview"
           initial={{ opacity: 0, scale: 0.9 }}
@@ -96,41 +129,14 @@ export default function Embroidery() {
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="emb-preview-ring" />
-          <motion.svg
-            viewBox="0 0 200 220" className="emb-jersey"
-            animate={{ y: [0, -12, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <defs>
-              <linearGradient id="embFab" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#1a1a1d" />
-                <stop offset="100%" stopColor="#0a0a0b" />
-              </linearGradient>
-            </defs>
-            <path d="M70 26 L48 38 L26 70 L46 88 L60 76 V196 H140 V76 L154 88 L174 70 L152 38 L130 26 Q100 46 70 26Z" fill="url(#embFab)" stroke="#e8b923" strokeWidth="2" />
-            <path d="M80 30 Q100 44 120 30" fill="none" stroke="#e8b923" strokeWidth="2" />
-            <AnimatePresence mode="wait">
-              <motion.g
-                key={mode}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.35 }}
-              >
-                <text x="100" y="120" fontSize="52" fontWeight="800" fontFamily="Inter, sans-serif"
-                  fill={m.threadFill} textAnchor="middle"
-                  stroke={mode === 'embroidered' ? '#b8901a' : 'none'} strokeWidth={mode === 'embroidered' ? 1.2 : 0}>10</text>
-                <text x="100" y="164" fontSize="16" fontWeight="700" letterSpacing="3" fontFamily="Inter, sans-serif"
-                  fill={m.threadFill} textAnchor="middle">CHENNAI</text>
-              </motion.g>
-            </AnimatePresence>
-            {/* stitch dashes only for embroidered */}
-            {mode === 'embroidered' && (
-              <motion.circle cx="100" cy="103" r="40" fill="none" stroke="#e8b923" strokeWidth="1.4"
-                strokeDasharray="4 5" initial={{ opacity: 0 }} animate={{ opacity: 0.55 }} />
-            )}
-          </motion.svg>
-          <div className="emb-preview-label">{m.label} finish</div>
+          <CompareSlider
+            className="emb-compare hoverable"
+            before={<EmbroideredJersey />}
+            after={<PrintedJersey />}
+            leftLabel="Embroidered"
+            rightLabel="Printed"
+          />
+          <div className="emb-preview-hint">← Drag to compare →</div>
         </motion.div>
       </div>
     </section>

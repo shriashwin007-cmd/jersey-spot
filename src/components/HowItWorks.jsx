@@ -31,7 +31,7 @@ export default function HowItWorks() {
         </div>
 
         <Reveal className="how-cta" delay={0.1}>
-          <a href={waLink('Hi Jersey Spot! I want to start an order.')} target="_blank" rel="noreferrer" className="btn btn-gold hoverable" data-cursor="chat">
+          <a href={waLink('Hi Jersey Spot! I want to start an order.')} target="_blank" rel="noreferrer" className="btn btn-gold hoverable">
             Start Your Order
           </a>
         </Reveal>

@@ -1,31 +1,8 @@
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Magnetic } from './anim';
+import ParticleField from './ParticleField';
 import { waLink, SHOP } from '../config';
-
-function Particles() {
-  const dots = Array.from({ length: 22 });
-  return (
-    <div className="hero-particles" aria-hidden>
-      {dots.map((_, i) => {
-        const size = 2 + Math.random() * 3;
-        return (
-          <motion.span
-            key={i}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              width: size,
-              height: size,
-            }}
-            animate={{ y: [0, -(18 + Math.random() * 22), 0], opacity: [0.1, 0.5, 0.1] }}
-            transition={{ duration: 4 + Math.random() * 4, repeat: Infinity, delay: Math.random() * 5, ease: 'easeInOut' }}
-          />
-        );
-      })}
-    </div>
-  );
-}
 
 const STATS = [
   { n: '6+', l: 'Years in Chennai' },
@@ -52,7 +29,7 @@ export default function Hero() {
         <div className="hero-glow hero-glow-1" />
         <div className="hero-glow hero-glow-2" />
         <div className="hero-grid" />
-        <Particles />
+        <ParticleField />
       </div>
 
       <motion.div className="container hero-inner" style={{ y: yUp, opacity: fade }}>
@@ -72,7 +49,7 @@ export default function Hero() {
           </motion.p>
 
           <motion.div className="hero-cta" {...fadeUp(0.4)}>
-            <Magnetic href={waLink()} target="_blank" rel="noreferrer" className="btn btn-gold hoverable" data-cursor="chat">
+            <Magnetic href={waLink()} target="_blank" rel="noreferrer" className="btn btn-gold hoverable">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
               </svg>
