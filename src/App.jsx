@@ -7,6 +7,7 @@ import Hero from './components/Hero';
 import Marquee from './components/Marquee';
 import BrandStory from './components/BrandStory';
 import WhatWeSell from './components/WhatWeSell';
+import Gallery from './components/Gallery';
 import Embroidery from './components/Embroidery';
 import WhyUs from './components/WhyUs';
 import Contact from './components/Contact';
@@ -60,6 +61,7 @@ export default function App() {
         <Marquee />
         <BrandStory />
         <WhatWeSell />
+        <Gallery />
         <Embroidery />
         <WhyUs />
         <Contact />
