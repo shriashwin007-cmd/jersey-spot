@@ -30,8 +30,10 @@
   --border-strong:rgba(255,255,255,0.14);
 
   /* ── Type ── */
-  --font-display: 'Playfair Display', Georgia, serif;
+  --font-display: 'Playfair Display', Georgia, serif;   /* elegant headlines */
   --font-body:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-ui:      'Space Grotesk', 'Inter', sans-serif; /* modern UI/labels */
+  --font-impact:  'Bebas Neue', 'Space Grotesk', sans-serif; /* big sporty numbers */
 
   /* ── Radius ── */
   --r-sm: 8px;
@@ -104,6 +106,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  font-family: var(--font-ui);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.24em;
@@ -138,6 +141,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.
   gap: 10px;
   padding: 15px 28px;
   border-radius: var(--r-pill);
+  font-family: var(--font-ui);
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.02em;

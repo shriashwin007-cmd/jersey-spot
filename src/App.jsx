@@ -5,11 +5,15 @@ import CustomCursor from './components/CustomCursor';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Marquee from './components/Marquee';
+import StatsBand from './components/StatsBand';
 import BrandStory from './components/BrandStory';
 import WhatWeSell from './components/WhatWeSell';
 import Gallery from './components/Gallery';
 import Embroidery from './components/Embroidery';
+import HowItWorks from './components/HowItWorks';
 import WhyUs from './components/WhyUs';
+import Testimonials from './components/Testimonials';
+import FAQ from './components/FAQ';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import ScrollProgress from './components/ScrollProgress';
@@ -59,11 +63,15 @@ export default function App() {
       <main id="main">
         <Hero />
         <Marquee />
+        <StatsBand />
         <BrandStory />
         <WhatWeSell />
         <Gallery />
         <Embroidery />
+        <HowItWorks />
         <WhyUs />
+        <Testimonials />
+        <FAQ />
         <Contact />
       </main>
 

@@ -12,6 +12,11 @@ import '@fontsource/playfair-display/600.css';
 import '@fontsource/playfair-display/700.css';
 import '@fontsource/playfair-display/700-italic.css';
 import '@fontsource/playfair-display/800.css';
+import '@fontsource/space-grotesk/400.css';
+import '@fontsource/space-grotesk/500.css';
+import '@fontsource/space-grotesk/600.css';
+import '@fontsource/space-grotesk/700.css';
+import '@fontsource/bebas-neue/400.css';
 
 import './index.css';
 import './styles.css';
