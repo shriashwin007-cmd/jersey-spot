@@ -79,99 +79,106 @@ function LoginGate({ onLogin }) {
   );
 }
 
+// Batch upload — drag in several photos at once. Tag/category/price/in-stock
+// are shared across the batch (they're normally the same for a fresh drop of
+// kits), but each photo gets its own required name field since those differ.
 function UploadForm({ password, onAdded }) {
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [name, setName] = useState('');
+  const [items, setItems] = useState([]);
   const [tag, setTag] = useState('');
   const [category, setCategory] = useState('embroidered');
   const [price, setPrice] = useState('');
+  const [inStock, setInStock] = useState(true);
   const [dragOver, setDragOver] = useState(false);
-  const [status, setStatus] = useState(''); // '', 'uploading', 'saving'
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const inputRef = useRef(null);
 
-  const pickFile = (f) => {
-    if (!f || !f.type.startsWith('image/')) return;
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
+  const addFiles = (fileList) => {
+    const files = Array.from(fileList || []).filter((f) => f.type.startsWith('image/'));
+    if (!files.length) return;
+    setItems((prev) => [
+      ...prev,
+      ...files.map((f) => ({
+        id: `${Date.now()}-${Math.random()}`,
+        file: f,
+        preview: URL.createObjectURL(f),
+        name: f.name.replace(/\.[^.]+$/, ''),
+      })),
+    ]);
   };
 
-  const onDrop = (e) => {
-    e.preventDefault();
-    setDragOver(false);
-    pickFile(e.dataTransfer.files?.[0]);
-  };
+  const onDrop = (e) => { e.preventDefault(); setDragOver(false); addFiles(e.dataTransfer.files); };
+  const removeItem = (id) => setItems((prev) => prev.filter((it) => it.id !== id));
+  const renameItem = (id, name) => setItems((prev) => prev.map((it) => (it.id === id ? { ...it, name } : it)));
 
   const reset = () => {
-    setFile(null); setPreview(null); setName(''); setTag(''); setPrice('');
+    setItems([]); setTag(''); setPrice('');
     if (inputRef.current) inputRef.current.value = '';
   };
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!file || !name) { setError('Add a photo and a name.'); return; }
+    if (!items.length) { setError('Add at least one photo.'); return; }
+    if (items.some((it) => !it.name.trim())) { setError('Every photo needs a name.'); return; }
     setError('');
+    setUploading(true);
     try {
-      setStatus('uploading');
-      const uploaded = await uploadToCloudinary(file);
-      setStatus('saving');
-      const { product } = await api('/api/products', {
-        method: 'POST',
-        password,
-        body: JSON.stringify({
-          name,
-          tag,
-          category,
-          price: Number(price) || 0,
-          imageUrl: uploaded.secure_url,
-          cloudinaryPublicId: uploaded.public_id,
-        }),
-      });
-      onAdded(product);
+      for (const it of items) {
+        const uploaded = await uploadToCloudinary(it.file);
+        const { product } = await api('/api/products', {
+          method: 'POST',
+          password,
+          body: JSON.stringify({
+            name: it.name,
+            tag,
+            category,
+            price: Number(price) || 0,
+            inStock,
+            imageUrl: uploaded.secure_url,
+            cloudinaryPublicId: uploaded.public_id,
+          }),
+        });
+        onAdded(product);
+      }
       reset();
     } catch (err) {
       setError(err.message);
     } finally {
-      setStatus('');
+      setUploading(false);
     }
   };
 
   return (
     <form className="admin-upload-card" onSubmit={submit}>
-      <h2>Add a jersey photo</h2>
+      <h2>Add jersey photos</h2>
 
       <div
-        className={`admin-drop${dragOver ? ' over' : ''}${preview ? ' has-file' : ''}`}
+        className={`admin-drop${dragOver ? ' over' : ''}`}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
         onClick={() => inputRef.current?.click()}
       >
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={(e) => pickFile(e.target.files?.[0])}
-        />
-        {preview ? (
-          <img src={preview} alt="Selected" />
-        ) : (
-          <>
-            <div className="admin-drop-icon">📷</div>
-            <div>Drag &amp; drop a photo here, or click to browse</div>
-          </>
-        )}
+        <input ref={inputRef} type="file" accept="image/*" multiple hidden onChange={(e) => addFiles(e.target.files)} />
+        <div className="admin-drop-icon">📷</div>
+        <div>Drag &amp; drop one or more photos, or click to browse</div>
       </div>
+
+      {items.length > 0 && (
+        <div className="admin-batch-list">
+          {items.map((it) => (
+            <div className="admin-batch-item" key={it.id}>
+              <img src={it.preview} alt="" />
+              <input value={it.name} onChange={(e) => renameItem(it.id, e.target.value)} placeholder="Name" />
+              <button type="button" className="ghost" onClick={() => removeItem(it.id)}>✕</button>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="admin-field-row">
         <label className="admin-field">
-          <span>Name</span>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Real Madrid Away" />
-        </label>
-        <label className="admin-field">
-          <span>Tag</span>
+          <span>Tag <em>(applies to all above)</em></span>
           <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="e.g. Retro" />
         </label>
       </div>
@@ -187,11 +194,17 @@ function UploadForm({ password, onAdded }) {
           <input type="number" min="0" max="999999" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="1499" />
         </label>
       </div>
+      <label className="admin-checkbox">
+        <input type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} />
+        In stock
+      </label>
 
       {error && <div className="admin-error">{error}</div>}
 
-      <button type="submit" disabled={!!status}>
-        {status === 'uploading' ? 'Uploading photo…' : status === 'saving' ? 'Saving…' : 'Upload & Add'}
+      <button type="submit" disabled={uploading || !items.length}>
+        {uploading
+          ? `Uploading ${items.length} photo${items.length > 1 ? 's' : ''}…`
+          : `Upload & Add${items.length ? ` (${items.length})` : ''}`}
       </button>
     </form>
   );
@@ -201,6 +214,7 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(p.name);
   const [tag, setTag] = useState(p.tag);
+  const [category, setCategory] = useState(p.category);
   const [price, setPrice] = useState(p.price);
   const [busy, setBusy] = useState(false);
 
@@ -209,10 +223,25 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
     try {
       const { product } = await api(`/api/products/${p.id}`, {
         method: 'PUT', password,
-        body: JSON.stringify({ name, tag, price: Number(price) || 0 }),
+        body: JSON.stringify({ name, tag, category, price: Number(price) || 0 }),
       });
       onUpdated(product);
       setEditing(false);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const toggleStock = async () => {
+    setBusy(true);
+    try {
+      const { product } = await api(`/api/products/${p.id}`, {
+        method: 'PUT', password,
+        body: JSON.stringify({ inStock: !p.in_stock }),
+      });
+      onUpdated(product);
     } catch (err) {
       alert(err.message);
     } finally {
@@ -233,18 +262,24 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
   };
 
   return (
-    <div className="admin-row" draggable {...dragHandlers}>
+    <div className={`admin-row${p.in_stock ? '' : ' sold-out'}`} draggable {...dragHandlers}>
       <span className="admin-row-handle" title="Drag to reorder">⠿</span>
       <img src={p.image_url} alt={p.name} className="admin-row-thumb" />
       {editing ? (
         <div className="admin-row-edit">
-          <input value={name} onChange={(e) => setName(e.target.value)} />
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" />
           <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Tag" />
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+          </select>
           <input type="number" min="0" max="999999" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Price" />
         </div>
       ) : (
         <div className="admin-row-info">
-          <div className="admin-row-name">{p.name}</div>
+          <div className="admin-row-name">
+            {p.name}
+            {!p.in_stock && <span className="admin-badge-soldout">Sold Out</span>}
+          </div>
           <div className="admin-row-meta">{p.category} · {p.tag || '—'} · ₹{p.price}</div>
         </div>
       )}
@@ -256,7 +291,10 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
           </>
         ) : (
           <>
-            <button className="ghost" onClick={() => setEditing(true)}>Edit</button>
+            <button className="ghost" disabled={busy} onClick={toggleStock}>
+              {p.in_stock ? 'Mark Sold Out' : 'Mark In Stock'}
+            </button>
+            <button className="ghost" disabled={busy} onClick={() => setEditing(true)}>Edit</button>
             <button className="danger" disabled={busy} onClick={del}>Delete</button>
           </>
         )}

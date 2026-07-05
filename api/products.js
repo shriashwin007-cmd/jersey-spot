@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
       const rows = await sql`
-        SELECT id, name, tag, category, price, image_url, cloudinary_public_id, sort_order, created_at
+        SELECT id, name, tag, category, price, image_url, cloudinary_public_id, sort_order, in_stock, created_at
         FROM products
         ORDER BY sort_order ASC, created_at DESC
       `;
@@ -19,16 +19,16 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       if (!checkAdminPassword(req)) return res.status(401).json({ error: 'Unauthorized' });
 
-      const { name, tag = '', category = 'jersey', price = 0, imageUrl, cloudinaryPublicId } = req.body || {};
+      const { name, tag = '', category = 'jersey', price = 0, inStock = true, imageUrl, cloudinaryPublicId } = req.body || {};
       if (!name || !imageUrl || !cloudinaryPublicId) {
         return res.status(400).json({ error: 'name, imageUrl and cloudinaryPublicId are required' });
       }
 
       const [{ max }] = await sql`SELECT COALESCE(MAX(sort_order), 0) AS max FROM products`;
       const [row] = await sql`
-        INSERT INTO products (name, tag, category, price, image_url, cloudinary_public_id, sort_order)
-        VALUES (${name}, ${tag}, ${category}, ${sanitizePrice(price)}, ${imageUrl}, ${cloudinaryPublicId}, ${max + 1})
-        RETURNING id, name, tag, category, price, image_url, cloudinary_public_id, sort_order, created_at
+        INSERT INTO products (name, tag, category, price, image_url, cloudinary_public_id, sort_order, in_stock)
+        VALUES (${name}, ${tag}, ${category}, ${sanitizePrice(price)}, ${imageUrl}, ${cloudinaryPublicId}, ${max + 1}, ${!!inStock})
+        RETURNING id, name, tag, category, price, image_url, cloudinary_public_id, sort_order, in_stock, created_at
       `;
       return res.status(201).json({ product: row });
     }

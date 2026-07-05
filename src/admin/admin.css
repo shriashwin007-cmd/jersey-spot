@@ -55,15 +55,26 @@ button.danger { background: rgba(224,90,77,0.15); border: 1px solid rgba(224,90,
 .admin-field { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 .admin-field-price { max-width: 120px; }
 .admin-field span { font-size: 12px; color: var(--text-muted); }
+.admin-field span em { font-style: normal; opacity: 0.7; }
 .admin-field input, .admin-field select {
   padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
   background: var(--bg); color: var(--text); font-size: 14px;
 }
+.admin-checkbox { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); margin-bottom: 14px; cursor: pointer; }
+.admin-checkbox input { width: 16px; height: 16px; accent-color: var(--gold); }
 .admin-upload-card > button[type="submit"] {
   width: 100%; padding: 12px; border-radius: 8px; border: none; margin-top: 4px;
   background: linear-gradient(180deg, var(--gold-bright), var(--gold)); color: #1a1300; font-weight: 700;
 }
 .admin-upload-card > button[type="submit"]:disabled { opacity: 0.6; }
+
+/* ── Batch upload list ── */
+.admin-batch-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; max-height: 260px; overflow-y: auto; }
+.admin-batch-item { display: flex; align-items: center; gap: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px; }
+.admin-batch-item img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+.admin-batch-item input { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text); font-size: 13px; }
+.admin-batch-item button { flex-shrink: 0; background: none; border: none; color: var(--text-muted); font-size: 14px; padding: 6px 10px; }
+.admin-batch-item button:hover { color: var(--danger); }
 
 /* ── List ── */
 .admin-empty { color: var(--text-muted); font-size: 14px; padding: 20px 0; text-align: center; }
@@ -72,10 +83,13 @@ button.danger { background: rgba(224,90,77,0.15); border: 1px solid rgba(224,90,
 .admin-row-handle { color: var(--text-muted); cursor: grab; font-size: 16px; }
 .admin-row-thumb { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
 .admin-row-info { flex: 1; min-width: 0; }
-.admin-row-name { font-weight: 600; font-size: 14px; }
+.admin-row-name { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
 .admin-row-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; text-transform: capitalize; }
-.admin-row-edit { flex: 1; display: flex; gap: 8px; }
-.admin-row-edit input { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 13px; }
-.admin-row-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.admin-row-edit { flex: 1; display: flex; gap: 8px; flex-wrap: wrap; }
+.admin-row-edit input, .admin-row-edit select { flex: 1; min-width: 90px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 13px; }
+.admin-row-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; max-width: 220px; }
+.admin-row.sold-out { opacity: 0.55; }
+.admin-row.sold-out .admin-row-thumb { filter: grayscale(0.6); }
+.admin-badge-soldout { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--danger); background: rgba(224,90,77,0.15); border: 1px solid rgba(224,90,77,0.35); padding: 2px 8px; border-radius: 10px; }
 
 .admin-error { background: rgba(224,90,77,0.12); border: 1px solid rgba(224,90,77,0.35); color: var(--danger); font-size: 13px; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; }

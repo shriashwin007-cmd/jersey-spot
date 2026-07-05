@@ -128,7 +128,7 @@
 .sell-card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
 .sell-card-price { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; color: var(--gold-bright); }
 .sell-card-price span { font-family: var(--font-body); font-size: 0.7rem; color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.1em; margin-right: 4px; }
-.sell-card-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--text); background: rgba(255,255,255,0.05); border: 1px solid var(--border-strong); padding: 8px 14px; border-radius: var(--r-pill); transition: background 0.2s, border-color 0.2s, color 0.2s; }
+.sell-card-btn { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text); background: rgba(255,255,255,0.05); border: 1px solid var(--border-strong); padding: 8px 14px; border-radius: var(--r-pill); cursor: pointer; transition: background 0.2s, border-color 0.2s, color 0.2s; }
 .sell-card-btn:hover { color: var(--gold-bright); border-color: var(--gold-line); background: var(--gold-soft); }
 @media (max-width: 1040px) { .sell-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 520px) { .sell-grid { grid-template-columns: 1fr; } }
@@ -229,6 +229,16 @@
 .gallery-ig { color: var(--gold); border-bottom: 1px solid var(--gold-line); font-weight: 600; }
 .gallery-ig:hover { color: var(--gold-bright); }
 .gallery-cta { display: flex; justify-content: center; margin-top: 48px; }
+
+.gallery-filters { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-bottom: 36px; }
+.gallery-filter-btn {
+  padding: 9px 20px; border-radius: var(--r-pill); font-size: 13px; font-weight: 600;
+  background: var(--bg-elev-2); border: 1px solid var(--border-strong); color: var(--text-muted);
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.gallery-filter-btn:hover { border-color: var(--gold-line); color: var(--text); }
+.gallery-filter-btn.active { background: linear-gradient(180deg, var(--gold-bright), var(--gold)); border-color: transparent; color: #1a1300; }
+.gallery-empty { text-align: center; color: var(--text-muted); font-size: 0.95rem; padding: 60px 20px; }
 
 /* ── Dome 3D slider ────────────────────────────────────── */
 .dome-wrap { display: flex; flex-direction: column; align-items: center; gap: 34px; }

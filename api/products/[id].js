@@ -12,17 +12,19 @@ export default async function handler(req, res) {
     if (!checkAdminPassword(req)) return res.status(401).json({ error: 'Unauthorized' });
 
     if (req.method === 'PUT') {
-      const { name, tag, category, price, sortOrder } = req.body || {};
+      const { name, tag, category, price, sortOrder, inStock } = req.body || {};
       const safePrice = price === undefined || price === null ? null : sanitizePrice(price);
+      const safeInStock = inStock === undefined || inStock === null ? null : !!inStock;
       const [row] = await sql`
         UPDATE products SET
           name = COALESCE(${name}, name),
           tag = COALESCE(${tag}, tag),
           category = COALESCE(${category}, category),
           price = COALESCE(${safePrice}, price),
-          sort_order = COALESCE(${sortOrder}, sort_order)
+          sort_order = COALESCE(${sortOrder}, sort_order),
+          in_stock = COALESCE(${safeInStock}, in_stock)
         WHERE id = ${id}
-        RETURNING id, name, tag, category, price, image_url, cloudinary_public_id, sort_order, created_at
+        RETURNING id, name, tag, category, price, image_url, cloudinary_public_id, sort_order, in_stock, created_at
       `;
       if (!row) return res.status(404).json({ error: 'Not found' });
       return res.status(200).json({ product: row });

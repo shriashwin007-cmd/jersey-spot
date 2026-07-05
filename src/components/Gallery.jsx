@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import DomeSlider from './DomeSlider';
 import { SHOP, waLink } from '../config';
@@ -6,35 +6,61 @@ import { SHOP, waLink } from '../config';
 // Static fallback — shown until the admin catalog has real entries, or if
 // the database isn't connected yet. The live site never breaks either way.
 const FALLBACK_KITS = [
-  { img: '/shop/shop-1.jpg', name: 'England Away', tag: 'Retro', msg: 'Hi! I want the England Away jersey.' },
-  { img: '/shop/shop-2.jpg', name: 'Real Madrid Away', tag: 'Pink Edition', msg: 'Hi! I want the Real Madrid pink away jersey.' },
-  { img: '/shop/shop-3.jpg', name: 'Portugal', tag: 'Black & Gold', msg: 'Hi! I want the Portugal black & gold jersey.' },
-  { img: '/shop/shop-4.jpg', name: 'Inter Miami', tag: 'Home', msg: 'Hi! I want the Inter Miami home jersey.' },
-  { img: '/shop/shop-5.jpg', name: 'Argentina', tag: '3-Star', msg: 'Hi! I want the Argentina 3-star jersey.' },
-  { img: '/shop/shop-6.jpg', name: 'Real Madrid', tag: 'Retro Blue', msg: 'Hi! I want the Real Madrid retro blue jersey.' },
+  { img: '/shop/shop-1.jpg', name: 'England Away', tag: 'Retro', category: 'embroidered', msg: 'Hi! I want the England Away jersey.' },
+  { img: '/shop/shop-2.jpg', name: 'Real Madrid Away', tag: 'Pink Edition', category: 'embroidered', msg: 'Hi! I want the Real Madrid pink away jersey.' },
+  { img: '/shop/shop-3.jpg', name: 'Portugal', tag: 'Black & Gold', category: 'embroidered', msg: 'Hi! I want the Portugal black & gold jersey.' },
+  { img: '/shop/shop-4.jpg', name: 'Inter Miami', tag: 'Home', category: 'printed', msg: 'Hi! I want the Inter Miami home jersey.' },
+  { img: '/shop/shop-5.jpg', name: 'Argentina', tag: '3-Star', category: 'printed', msg: 'Hi! I want the Argentina 3-star jersey.' },
+  { img: '/shop/shop-6.jpg', name: 'Real Madrid', tag: 'Retro Blue', category: 'embroidered', msg: 'Hi! I want the Real Madrid retro blue jersey.' },
 ];
+
+const FILTERS = [
+  { value: 'all', label: 'All' },
+  { value: 'embroidered', label: 'Embroidered' },
+  { value: 'printed', label: 'Printed' },
+  { value: 'football', label: 'Football' },
+  { value: 'boots', label: 'Boots' },
+];
+
+const DEEP_LINK_KEY = 'jersey_gallery_category';
 
 export default function Gallery() {
   const [kits, setKits] = useState(FALLBACK_KITS);
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
+    // A WhatWeSell card may have asked us to open pre-filtered to a category.
+    const requested = sessionStorage.getItem(DEEP_LINK_KEY);
+    if (requested) {
+      setFilter(requested);
+      sessionStorage.removeItem(DEEP_LINK_KEY);
+    }
+
     let cancelled = false;
     fetch('/api/products')
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (cancelled || !data?.products?.length) return;
         setKits(
-          data.products.map((p) => ({
-            img: p.image_url,
-            name: p.name,
-            tag: p.tag,
-            msg: `Hi! I want the ${p.name}${p.tag ? ` (${p.tag})` : ''} jersey.`,
-          }))
+          data.products
+            .filter((p) => p.in_stock)
+            .map((p) => ({
+              img: p.image_url,
+              name: p.name,
+              tag: p.tag,
+              category: p.category,
+              msg: `Hi! I want the ${p.name}${p.tag ? ` (${p.tag})` : ''} jersey.`,
+            }))
         );
       })
       .catch(() => {}); // keep the static fallback on any error
     return () => { cancelled = true; };
   }, []);
+
+  const filtered = useMemo(
+    () => (filter === 'all' ? kits : kits.filter((k) => k.category === filter)),
+    [kits, filter]
+  );
 
   return (
     <section className="section gallery" id="kits">
@@ -55,10 +81,29 @@ export default function Gallery() {
           </p>
         </motion.div>
 
-        <DomeSlider
-          items={kits}
-          onSelect={(item) => window.open(waLink(item.msg), '_blank', 'noopener')}
-        />
+        <div className="gallery-filters" role="tablist" aria-label="Filter by category">
+          {FILTERS.map((f) => (
+            <button
+              key={f.value}
+              role="tab"
+              aria-selected={filter === f.value}
+              className={`gallery-filter-btn hoverable${filter === f.value ? ' active' : ''}`}
+              onClick={() => setFilter(f.value)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="gallery-empty">Nothing in this category yet — message us, we've probably still got it.</div>
+        ) : (
+          <DomeSlider
+            key={filter}
+            items={filtered}
+            onSelect={(item) => window.open(waLink(item.msg), '_blank', 'noopener')}
+          />
+        )}
 
         <motion.div
           className="gallery-cta"

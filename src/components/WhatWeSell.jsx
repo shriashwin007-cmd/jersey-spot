@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { waLink } from '../config';
 
@@ -36,6 +36,8 @@ const Art = {
   ),
 };
 
+// ids match the admin's category taxonomy (embroidered/printed/football/boots)
+// so a live count + deep-link into the filtered Gallery can key off them directly.
 const PRODUCTS = [
   {
     id: 'embroidered',
@@ -56,7 +58,7 @@ const PRODUCTS = [
     msg: 'Hi Jersey Spot! I want to order a PRINTED (non-embroidered) jersey.',
   },
   {
-    id: 'footballs',
+    id: 'football',
     art: Art.football,
     tag: 'Match Grade',
     title: 'Footballs',
@@ -75,7 +77,9 @@ const PRODUCTS = [
   },
 ];
 
-function TiltCard({ p, i }) {
+const DEEP_LINK_KEY = 'jersey_gallery_category';
+
+function TiltCard({ p, i, count, onViewStock }) {
   const ref = useRef(null);
   const [t, setT] = useState('');
   const onMove = (e) => {
@@ -85,6 +89,7 @@ function TiltCard({ p, i }) {
     setT(`perspective(800px) rotateX(${(-py * 8).toFixed(2)}deg) rotateY(${(px * 8).toFixed(2)}deg)`);
   };
   const reset = () => setT('perspective(800px) rotateX(0deg) rotateY(0deg)');
+  const hasStock = typeof count === 'number' && count > 0;
 
   return (
     <motion.article
@@ -108,10 +113,17 @@ function TiltCard({ p, i }) {
         <p className="sell-card-desc">{p.desc}</p>
         <div className="sell-card-foot">
           <div className="sell-card-price"><span>from</span> {p.from}</div>
-          <a href={waLink(p.msg)} target="_blank" rel="noreferrer" className="sell-card-btn hoverable" aria-label={`Enquire about ${p.title}`}>
-            Enquire
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-          </a>
+          {hasStock ? (
+            <button type="button" onClick={onViewStock} className="sell-card-btn hoverable" aria-label={`View ${p.title} in stock`}>
+              {count} in stock
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </button>
+          ) : (
+            <a href={waLink(p.msg)} target="_blank" rel="noreferrer" className="sell-card-btn hoverable" aria-label={`Enquire about ${p.title}`}>
+              Enquire
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </a>
+          )}
         </div>
       </div>
     </motion.article>
@@ -119,6 +131,28 @@ function TiltCard({ p, i }) {
 }
 
 export default function WhatWeSell() {
+  const [counts, setCounts] = useState(null); // null = not loaded yet; {} once fetched
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data?.products) { setCounts({}); return; }
+        const map = {};
+        for (const p of data.products) {
+          if (!p.in_stock) continue;
+          map[p.category] = (map[p.category] || 0) + 1;
+        }
+        setCounts(map);
+      })
+      .catch(() => setCounts({}));
+  }, []);
+
+  const viewInStock = (category) => {
+    sessionStorage.setItem(DEEP_LINK_KEY, category);
+    document.getElementById('kits')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <section className="section sell" id="shop">
       <div className="container">
@@ -135,7 +169,9 @@ export default function WhatWeSell() {
         </motion.div>
 
         <div className="sell-grid">
-          {PRODUCTS.map((p, i) => <TiltCard key={p.id} p={p} i={i} />)}
+          {PRODUCTS.map((p, i) => (
+            <TiltCard key={p.id} p={p} i={i} count={counts?.[p.id]} onViewStock={() => viewInStock(p.id)} />
+          ))}
         </div>
       </div>
     </section>

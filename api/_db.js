@@ -12,19 +12,23 @@ let schemaReady = null;
 export async function ensureSchema() {
   if (!sql) throw new Error('No database connected (POSTGRES_URL missing)');
   if (!schemaReady) {
-    schemaReady = sql`
-      CREATE TABLE IF NOT EXISTS products (
-        id SERIAL PRIMARY KEY,
-        name TEXT NOT NULL,
-        tag TEXT NOT NULL DEFAULT '',
-        category TEXT NOT NULL DEFAULT 'jersey',
-        price INTEGER NOT NULL DEFAULT 0,
-        image_url TEXT NOT NULL,
-        cloudinary_public_id TEXT NOT NULL,
-        sort_order INTEGER NOT NULL DEFAULT 0,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-      )
-    `;
+    schemaReady = (async () => {
+      await sql`
+        CREATE TABLE IF NOT EXISTS products (
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          tag TEXT NOT NULL DEFAULT '',
+          category TEXT NOT NULL DEFAULT 'jersey',
+          price INTEGER NOT NULL DEFAULT 0,
+          image_url TEXT NOT NULL,
+          cloudinary_public_id TEXT NOT NULL,
+          sort_order INTEGER NOT NULL DEFAULT 0,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `;
+      // Idempotent migration for installs created before in_stock existed.
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS in_stock BOOLEAN NOT NULL DEFAULT true`;
+    })();
   }
   await schemaReady;
 }
