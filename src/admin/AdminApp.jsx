@@ -88,6 +88,7 @@ function UploadForm({ password, onAdded }) {
   const [category, setCategory] = useState('embroidered');
   const [price, setPrice] = useState('');
   const [inStock, setInStock] = useState(true);
+  const [buyOnline, setBuyOnline] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -134,6 +135,7 @@ function UploadForm({ password, onAdded }) {
             category,
             price: Number(price) || 0,
             inStock,
+            buyOnline,
             imageUrl: uploaded.secure_url,
             cloudinaryPublicId: uploaded.public_id,
           }),
@@ -198,6 +200,10 @@ function UploadForm({ password, onAdded }) {
         <input type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} />
         In stock
       </label>
+      <label className="admin-checkbox">
+        <input type="checkbox" checked={buyOnline} onChange={(e) => setBuyOnline(e.target.checked)} />
+        Allow instant "Buy Now" checkout <em>(ready-to-ship items only — no custom name/number needed)</em>
+      </label>
 
       {error && <div className="admin-error">{error}</div>}
 
@@ -249,6 +255,21 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
     }
   };
 
+  const toggleBuyOnline = async () => {
+    setBusy(true);
+    try {
+      const { product } = await api(`/api/products/${p.id}`, {
+        method: 'PUT', password,
+        body: JSON.stringify({ buyOnline: !p.buy_online }),
+      });
+      onUpdated(product);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const del = async () => {
     if (!confirm(`Delete "${p.name}"? This also removes it from Cloudinary.`)) return;
     setBusy(true);
@@ -279,8 +300,9 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
           <div className="admin-row-name">
             {p.name}
             {!p.in_stock && <span className="admin-badge-soldout">Sold Out</span>}
+            {p.buy_online && <span className="admin-badge-buyonline">Buy Online</span>}
           </div>
-          <div className="admin-row-meta">{p.category} · {p.tag || '—'} · ₹{p.price}</div>
+          <div className="admin-row-meta">{p.category} · {p.tag || '—'} · ₹{p.price}{p.enquiry_clicks > 0 ? ` · ${p.enquiry_clicks} enquiries` : ''}</div>
         </div>
       )}
       <div className="admin-row-actions">
@@ -294,6 +316,9 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
             <button className="ghost" disabled={busy} onClick={toggleStock}>
               {p.in_stock ? 'Mark Sold Out' : 'Mark In Stock'}
             </button>
+            <button className="ghost" disabled={busy} onClick={toggleBuyOnline}>
+              {p.buy_online ? 'Disable Buy Online' : 'Enable Buy Online'}
+            </button>
             <button className="ghost" disabled={busy} onClick={() => setEditing(true)}>Edit</button>
             <button className="danger" disabled={busy} onClick={del}>Delete</button>
           </>
@@ -303,7 +328,202 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
   );
 }
 
+const ORDER_STATUSES = ['pending', 'paid', 'shipped', 'delivered', 'cancelled', 'failed'];
+
+function OrdersTab({ password }) {
+  const [orders, setOrders] = useState(null);
+  const [error, setError] = useState('');
+
+  const load = useCallback(async () => {
+    try {
+      const { orders } = await api('/api/orders', { password });
+      setOrders(orders);
+    } catch (err) {
+      setError(err.message);
+    }
+  }, [password]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const setStatus = async (id, status) => {
+    try {
+      const { order } = await api(`/api/orders/${id}`, { method: 'PUT', password, body: JSON.stringify({ status }) });
+      setOrders((prev) => prev.map((o) => (o.id === order.id ? { ...o, status: order.status } : o)));
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  if (error) return <div className="admin-error">{error}</div>;
+  if (!orders) return <div className="admin-empty">Loading…</div>;
+  if (orders.length === 0) return <div className="admin-empty">No orders yet — they'll show up here once someone checks out online.</div>;
+
+  return (
+    <div className="admin-orders-list">
+      {orders.map((o) => (
+        <div className="admin-order-card" key={o.id}>
+          <div className="admin-order-top">
+            <div>
+              <div className="admin-order-id">Order #{o.id}</div>
+              <div className="admin-order-date">{new Date(o.created_at).toLocaleString('en-IN')}</div>
+            </div>
+            <select value={o.status} onChange={(e) => setStatus(o.id, e.target.value)} className={`admin-order-status status-${o.status}`}>
+              {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+
+          <div className="admin-order-customer">
+            <strong>{o.customer_name}</strong> · {o.customer_phone}{o.customer_email ? ` · ${o.customer_email}` : ''}
+            <div className="admin-order-address">{o.address_line}, {o.city}, {o.state} {o.pincode}</div>
+          </div>
+
+          <div className="admin-order-items">
+            {o.items.map((it, i) => (
+              <div key={i} className="admin-order-item">
+                <img src={it.imageUrl} alt="" />
+                <span>{it.name} × {it.qty}</span>
+                <span>₹{it.price * it.qty}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="admin-order-totals">
+            <span>Subtotal ₹{o.subtotal}</span>
+            <span>Shipping ₹{o.shipping_fee}</span>
+            <strong>Total ₹{o.total}</strong>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function StatCard({ label, value, sub }) {
+  return (
+    <div className="admin-stat-card">
+      <div className="admin-stat-value">{value}</div>
+      <div className="admin-stat-label">{label}</div>
+      {sub && <div className="admin-stat-sub">{sub}</div>}
+    </div>
+  );
+}
+
+function AnalyticsTab({ password }) {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    api('/api/dashboard', { password }).then(setData).catch((err) => setError(err.message));
+  }, [password]);
+
+  if (error) return <div className="admin-error">{error}</div>;
+  if (!data) return <div className="admin-empty">Loading…</div>;
+
+  return (
+    <div className="admin-analytics">
+      <div className="admin-stats-row">
+        <StatCard label="Today's Revenue" value={`₹${data.revenue.today.toLocaleString('en-IN')}`} />
+        <StatCard label="This Month" value={`₹${data.revenue.thisMonth.toLocaleString('en-IN')}`} />
+        <StatCard label="All Time" value={`₹${data.revenue.allTime.toLocaleString('en-IN')}`} />
+      </div>
+
+      <div className="admin-stats-row">
+        <StatCard label="Total Products" value={data.catalog.total} />
+        <StatCard label="In Stock" value={data.catalog.inStock} />
+        <StatCard label="Sold Out" value={data.catalog.soldOut} />
+      </div>
+
+      <div className="admin-analytics-grid">
+        <div className="admin-list-card">
+          <h2>Top Selling Products</h2>
+          {data.topProducts.length === 0 ? (
+            <div className="admin-empty">No paid orders yet.</div>
+          ) : (
+            <div className="admin-mini-table">
+              {data.topProducts.map((p, i) => (
+                <div className="admin-mini-row" key={i}>
+                  <span>{p.name}</span>
+                  <span>{p.qty} sold</span>
+                  <span>₹{Number(p.revenue).toLocaleString('en-IN')}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="admin-list-card">
+          <h2>Top Categories</h2>
+          {data.topCategories.length === 0 ? (
+            <div className="admin-empty">No paid orders yet.</div>
+          ) : (
+            <div className="admin-mini-table">
+              {data.topCategories.map((c, i) => (
+                <div className="admin-mini-row" key={i}>
+                  <span style={{ textTransform: 'capitalize' }}>{c.category}</span>
+                  <span>{c.qty} sold</span>
+                  <span>₹{Number(c.revenue).toLocaleString('en-IN')}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="admin-list-card">
+          <h2>Catalog Health</h2>
+          <div className="admin-mini-table">
+            {CATEGORIES.map((c) => {
+              const row = data.catalog.byCategory.find((r) => r.category === c.value);
+              return (
+                <div className="admin-mini-row" key={c.value}>
+                  <span>{c.label}</span>
+                  <span>{row ? `${row.in_stock}/${row.total} in stock` : 'None yet'}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="admin-list-card">
+          <h2>Most Enquired</h2>
+          {data.topEnquired.length === 0 ? (
+            <div className="admin-empty">No WhatsApp clicks tracked yet.</div>
+          ) : (
+            <div className="admin-mini-table">
+              {data.topEnquired.map((p) => (
+                <div className="admin-mini-row" key={p.id}>
+                  <span>{p.name}</span>
+                  <span>{p.enquiry_clicks} clicks</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="admin-list-card admin-activity-card">
+          <h2>Recent Activity</h2>
+          {data.recentActivity.length === 0 ? (
+            <div className="admin-empty">Nothing logged yet.</div>
+          ) : (
+            <div className="admin-activity-list">
+              {data.recentActivity.map((a) => (
+                <div className="admin-activity-row" key={a.id}>
+                  <span className="admin-activity-dot" />
+                  <div>
+                    <div>{a.details}</div>
+                    <div className="admin-activity-time">{new Date(a.created_at).toLocaleString('en-IN')}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Dashboard({ password, onLogout }) {
+  const [tab, setTab] = useState('catalog');
   const [products, setProducts] = useState(null);
   const [error, setError] = useState('');
   const dragIndex = useRef(null);
@@ -358,32 +578,55 @@ function Dashboard({ password, onLogout }) {
         <button className="ghost" onClick={onLogout}>Log out</button>
       </header>
 
-      <div className="admin-grid">
-        <UploadForm password={password} onAdded={onAdded} />
-
-        <div className="admin-list-card">
-          <h2>Catalog {products ? `(${products.length})` : ''}</h2>
-          {error && <div className="admin-error">{error}</div>}
-          {!products ? (
-            <div className="admin-empty">Loading…</div>
-          ) : products.length === 0 ? (
-            <div className="admin-empty">No products yet — add your first photo.</div>
-          ) : (
-            <div className="admin-list">
-              {products.map((p, i) => (
-                <ProductRow
-                  key={p.id}
-                  p={p}
-                  password={password}
-                  onDeleted={onDeleted}
-                  onUpdated={onUpdated}
-                  dragHandlers={dragHandlersFor(i)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="admin-tabs" role="tablist">
+        {[
+          { id: 'catalog', label: 'Catalog' },
+          { id: 'orders', label: 'Orders' },
+          { id: 'analytics', label: 'Analytics' },
+        ].map((t) => (
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={tab === t.id}
+            className={`admin-tab-btn${tab === t.id ? ' active' : ''}`}
+            onClick={() => setTab(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
+
+      {tab === 'catalog' && (
+        <div className="admin-grid">
+          <UploadForm password={password} onAdded={onAdded} />
+
+          <div className="admin-list-card">
+            <h2>Catalog {products ? `(${products.length})` : ''}</h2>
+            {error && <div className="admin-error">{error}</div>}
+            {!products ? (
+              <div className="admin-empty">Loading…</div>
+            ) : products.length === 0 ? (
+              <div className="admin-empty">No products yet — add your first photo.</div>
+            ) : (
+              <div className="admin-list">
+                {products.map((p, i) => (
+                  <ProductRow
+                    key={p.id}
+                    p={p}
+                    password={password}
+                    onDeleted={onDeleted}
+                    onUpdated={onUpdated}
+                    dragHandlers={dragHandlersFor(i)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {tab === 'orders' && <OrdersTab password={password} />}
+      {tab === 'analytics' && <AnalyticsTab password={password} />}
     </div>
   );
 }

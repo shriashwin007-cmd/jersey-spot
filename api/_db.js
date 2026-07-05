@@ -26,11 +26,54 @@ export async function ensureSchema() {
           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         )
       `;
-      // Idempotent migration for installs created before in_stock existed.
+      // Idempotent migrations for installs created before these columns existed.
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS in_stock BOOLEAN NOT NULL DEFAULT true`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS buy_online BOOLEAN NOT NULL DEFAULT false`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS enquiry_clicks INTEGER NOT NULL DEFAULT 0`;
+
+      await sql`
+        CREATE TABLE IF NOT EXISTS orders (
+          id SERIAL PRIMARY KEY,
+          status TEXT NOT NULL DEFAULT 'pending',
+          customer_name TEXT NOT NULL,
+          customer_phone TEXT NOT NULL,
+          customer_email TEXT NOT NULL DEFAULT '',
+          address_line TEXT NOT NULL,
+          city TEXT NOT NULL,
+          state TEXT NOT NULL,
+          pincode TEXT NOT NULL,
+          items JSONB NOT NULL,
+          subtotal INTEGER NOT NULL,
+          shipping_fee INTEGER NOT NULL DEFAULT 0,
+          total INTEGER NOT NULL,
+          razorpay_order_id TEXT,
+          razorpay_payment_id TEXT,
+          razorpay_signature TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `;
+
+      await sql`
+        CREATE TABLE IF NOT EXISTS activity_log (
+          id SERIAL PRIMARY KEY,
+          action TEXT NOT NULL,
+          details TEXT NOT NULL DEFAULT '',
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `;
     })();
   }
   await schemaReady;
+}
+
+// Best-effort — a logging failure should never break the request it's logging.
+export async function logActivity(action, details = '') {
+  if (!sql) return;
+  try {
+    await sql`INSERT INTO activity_log (action, details) VALUES (${action}, ${details})`;
+  } catch (err) {
+    console.error('logActivity failed', err);
+  }
 }
 
 export function checkAdminPassword(req) {

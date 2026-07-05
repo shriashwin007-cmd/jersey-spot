@@ -25,7 +25,7 @@ function styleFor(offset) {
   };
 }
 
-function DomeCard({ item, offset, onClick }) {
+function DomeCard({ item, offset, onClick, onAddToCart }) {
   const style = styleFor(offset);
   const x = useSpring(useMotionValue(style?.x ?? 0), SPRING);
   const y = useSpring(useMotionValue(style?.y ?? 0), SPRING);
@@ -42,22 +42,39 @@ function DomeCard({ item, offset, onClick }) {
   const transform = useMotionTemplate`translate(-50%, -50%) translate(${x}px, ${y}px) perspective(1000px) rotateY(${rotateY}deg) scale(${scale})`;
 
   const isCenter = offset === 0;
+  const canBuy = isCenter && item.buyOnline;
+
   return (
-    <motion.button
-      type="button"
+    <motion.div
+      role="button"
+      tabIndex={0}
       className={`dome-card hoverable${isCenter ? ' active' : ''}`}
-      style={{ transform, opacity, zIndex: 10 - Math.abs(offset), pointerEvents: isCenter ? 'auto' : 'auto' }}
+      style={{ transform, opacity, zIndex: 10 - Math.abs(offset) }}
       onClick={onClick}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
       aria-label={item.name}
     >
       <img src={item.img} alt={item.name} loading="lazy" width="320" height="320" />
       <span className="dome-card-tag">{item.tag}</span>
-      {isCenter && <span className="dome-card-name">{item.name}</span>}
-    </motion.button>
+      {isCenter && (
+        <div className="dome-card-info">
+          <span className="dome-card-name">{item.name}</span>
+          {canBuy && (
+            <button
+              type="button"
+              className="dome-card-cart-btn hoverable"
+              onClick={(e) => { e.stopPropagation(); onAddToCart(item); }}
+            >
+              Add to Cart · ₹{item.price}
+            </button>
+          )}
+        </div>
+      )}
+    </motion.div>
   );
 }
 
-export default function DomeSlider({ items, onSelect }) {
+export default function DomeSlider({ items, onSelect, onAddToCart }) {
   const [active, setActive] = useState(0);
   const total = items.length;
   const next = useCallback(() => setActive((a) => (a + 1) % total), [total]);
@@ -86,6 +103,7 @@ export default function DomeSlider({ items, onSelect }) {
               item={item}
               offset={offset}
               onClick={() => (offset === 0 ? onSelect && onSelect(item) : setActive(i))}
+              onAddToCart={onAddToCart}
             />
           );
         })}

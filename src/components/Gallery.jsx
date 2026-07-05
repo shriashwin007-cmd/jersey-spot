@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import DomeSlider from './DomeSlider';
+import { useCart } from '../cart';
 import { SHOP, waLink } from '../config';
 
 // Static fallback — shown until the admin catalog has real entries, or if
@@ -27,6 +28,7 @@ const DEEP_LINK_EVENT = 'jersey:filter-category';
 export default function Gallery() {
   const [kits, setKits] = useState(FALLBACK_KITS);
   const [filter, setFilter] = useState('all');
+  const { addItem } = useCart();
 
   useEffect(() => {
     // Gallery mounts once on initial page load — a plain "read sessionStorage
@@ -47,10 +49,13 @@ export default function Gallery() {
           data.products
             .filter((p) => p.in_stock)
             .map((p) => ({
+              id: p.id,
               img: p.image_url,
               name: p.name,
               tag: p.tag,
               category: p.category,
+              price: p.price,
+              buyOnline: p.buy_online,
               msg: `Hi! I want the ${p.name}${p.tag ? ` (${p.tag})` : ''} jersey.`,
             }))
         );
@@ -103,7 +108,17 @@ export default function Gallery() {
           <DomeSlider
             key={filter}
             items={filtered}
-            onSelect={(item) => window.open(waLink(item.msg), '_blank', 'noopener')}
+            onSelect={(item) => {
+              if (item.id) {
+                fetch('/api/track-enquiry', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ productId: item.id }),
+                }).catch(() => {});
+              }
+              window.open(waLink(item.msg), '_blank', 'noopener');
+            }}
+            onAddToCart={(item) => addItem({ id: item.id, name: item.name, price: item.price, img: item.img })}
           />
         )}
 

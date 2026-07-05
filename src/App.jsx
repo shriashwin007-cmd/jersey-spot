@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import Lenis from 'lenis';
+import { CartProvider } from './cart';
 
 import CustomCursor from './components/CustomCursor';
+import CartDrawer from './components/CartDrawer';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Marquee from './components/Marquee';
@@ -55,7 +57,7 @@ export default function App() {
   }, []);
 
   return (
-    <>
+    <CartProvider>
       <a href="#main" className="skip-link">Skip to content</a>
       <CustomCursor />
       <ScrollProgress />
@@ -79,6 +81,7 @@ export default function App() {
 
       <Footer />
       <WhatsAppFab />
-    </>
+      <CartDrawer />
+    </CartProvider>
   );
 }
