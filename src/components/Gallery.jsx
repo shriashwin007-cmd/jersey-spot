@@ -22,20 +22,22 @@ const FILTERS = [
   { value: 'boots', label: 'Boots' },
 ];
 
-const DEEP_LINK_KEY = 'jersey_gallery_category';
+const DEEP_LINK_EVENT = 'jersey:filter-category';
 
 export default function Gallery() {
   const [kits, setKits] = useState(FALLBACK_KITS);
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    // A WhatWeSell card may have asked us to open pre-filtered to a category.
-    const requested = sessionStorage.getItem(DEEP_LINK_KEY);
-    if (requested) {
-      setFilter(requested);
-      sessionStorage.removeItem(DEEP_LINK_KEY);
-    }
+    // Gallery mounts once on initial page load — a plain "read sessionStorage
+    // on mount" check would never fire for a click that happens later on the
+    // same page. Listen for the live event WhatWeSell dispatches instead.
+    const onDeepLink = (e) => setFilter(e.detail);
+    window.addEventListener(DEEP_LINK_EVENT, onDeepLink);
+    return () => window.removeEventListener(DEEP_LINK_EVENT, onDeepLink);
+  }, []);
 
+  useEffect(() => {
     let cancelled = false;
     fetch('/api/products')
       .then((r) => (r.ok ? r.json() : null))

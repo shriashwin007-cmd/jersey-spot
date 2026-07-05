@@ -77,7 +77,7 @@ const PRODUCTS = [
   },
 ];
 
-const DEEP_LINK_KEY = 'jersey_gallery_category';
+const DEEP_LINK_EVENT = 'jersey:filter-category';
 
 function TiltCard({ p, i, count, onViewStock }) {
   const ref = useRef(null);
@@ -149,7 +149,10 @@ export default function WhatWeSell() {
   }, []);
 
   const viewInStock = (category) => {
-    sessionStorage.setItem(DEEP_LINK_KEY, category);
+    // Gallery is already mounted (same-page scroll, not a navigation), so a
+    // live event is what actually reaches it — sessionStorage would only be
+    // read on Gallery's initial mount, which already happened by now.
+    window.dispatchEvent(new CustomEvent(DEEP_LINK_EVENT, { detail: category }));
     document.getElementById('kits')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
