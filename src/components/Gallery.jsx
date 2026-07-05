@@ -1,8 +1,11 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import DomeSlider from './DomeSlider';
 import { SHOP, waLink } from '../config';
 
-const KITS = [
+// Static fallback — shown until the admin catalog has real entries, or if
+// the database isn't connected yet. The live site never breaks either way.
+const FALLBACK_KITS = [
   { img: '/shop/shop-1.jpg', name: 'England Away', tag: 'Retro', msg: 'Hi! I want the England Away jersey.' },
   { img: '/shop/shop-2.jpg', name: 'Real Madrid Away', tag: 'Pink Edition', msg: 'Hi! I want the Real Madrid pink away jersey.' },
   { img: '/shop/shop-3.jpg', name: 'Portugal', tag: 'Black & Gold', msg: 'Hi! I want the Portugal black & gold jersey.' },
@@ -12,6 +15,27 @@ const KITS = [
 ];
 
 export default function Gallery() {
+  const [kits, setKits] = useState(FALLBACK_KITS);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/products')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.products?.length) return;
+        setKits(
+          data.products.map((p) => ({
+            img: p.image_url,
+            name: p.name,
+            tag: p.tag,
+            msg: `Hi! I want the ${p.name}${p.tag ? ` (${p.tag})` : ''} jersey.`,
+          }))
+        );
+      })
+      .catch(() => {}); // keep the static fallback on any error
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <section className="section gallery" id="kits">
       <div className="container">
@@ -32,7 +56,7 @@ export default function Gallery() {
         </motion.div>
 
         <DomeSlider
-          items={KITS}
+          items={kits}
           onSelect={(item) => window.open(waLink(item.msg), '_blank', 'noopener')}
         />
 

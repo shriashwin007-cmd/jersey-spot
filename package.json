@@ -15,6 +15,7 @@
     "@fontsource/playfair-display": "^5.2.8",
     "@fontsource/space-grotesk": "^5.2.10",
     "@motionone/utils": "^10.18.0",
+    "@neondatabase/serverless": "^1.1.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "framer-motion": "^12.42.0",

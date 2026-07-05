@@ -1,0 +1,43 @@
+import { sql, ensureSchema, checkAdminPassword } from '../_db.js';
+import { destroyCloudinaryAsset } from '../_cloudinary.js';
+
+export default async function handler(req, res) {
+  try {
+    if (!sql) return res.status(503).json({ error: 'Database not connected yet' });
+    await ensureSchema();
+
+    const id = Number(req.query.id);
+    if (!Number.isFinite(id)) return res.status(400).json({ error: 'Invalid id' });
+
+    if (!checkAdminPassword(req)) return res.status(401).json({ error: 'Unauthorized' });
+
+    if (req.method === 'PUT') {
+      const { name, tag, category, price, sortOrder } = req.body || {};
+      const [row] = await sql`
+        UPDATE products SET
+          name = COALESCE(${name}, name),
+          tag = COALESCE(${tag}, tag),
+          category = COALESCE(${category}, category),
+          price = COALESCE(${price}, price),
+          sort_order = COALESCE(${sortOrder}, sort_order)
+        WHERE id = ${id}
+        RETURNING id, name, tag, category, price, image_url, cloudinary_public_id, sort_order, created_at
+      `;
+      if (!row) return res.status(404).json({ error: 'Not found' });
+      return res.status(200).json({ product: row });
+    }
+
+    if (req.method === 'DELETE') {
+      const [row] = await sql`DELETE FROM products WHERE id = ${id} RETURNING cloudinary_public_id`;
+      if (!row) return res.status(404).json({ error: 'Not found' });
+      await destroyCloudinaryAsset(row.cloudinary_public_id);
+      return res.status(200).json({ ok: true });
+    }
+
+    res.setHeader('Allow', 'PUT, DELETE');
+    return res.status(405).json({ error: 'Method not allowed' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+}
