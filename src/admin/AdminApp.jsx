@@ -184,7 +184,7 @@ function UploadForm({ password, onAdded }) {
         </label>
         <label className="admin-field admin-field-price">
           <span>Price (₹)</span>
-          <input type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="1499" />
+          <input type="number" min="0" max="999999" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="1499" />
         </label>
       </div>
 
@@ -240,7 +240,7 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
         <div className="admin-row-edit">
           <input value={name} onChange={(e) => setName(e.target.value)} />
           <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Tag" />
-          <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Price" />
+          <input type="number" min="0" max="999999" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Price" />
         </div>
       ) : (
         <div className="admin-row-info">

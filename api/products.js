@@ -1,4 +1,4 @@
-import { sql, ensureSchema, checkAdminPassword } from './_db.js';
+import { sql, ensureSchema, checkAdminPassword, sanitizePrice } from './_db.js';
 
 export default async function handler(req, res) {
   try {
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
       const [{ max }] = await sql`SELECT COALESCE(MAX(sort_order), 0) AS max FROM products`;
       const [row] = await sql`
         INSERT INTO products (name, tag, category, price, image_url, cloudinary_public_id, sort_order)
-        VALUES (${name}, ${tag}, ${category}, ${price}, ${imageUrl}, ${cloudinaryPublicId}, ${max + 1})
+        VALUES (${name}, ${tag}, ${category}, ${sanitizePrice(price)}, ${imageUrl}, ${cloudinaryPublicId}, ${max + 1})
         RETURNING id, name, tag, category, price, image_url, cloudinary_public_id, sort_order, created_at
       `;
       return res.status(201).json({ product: row });

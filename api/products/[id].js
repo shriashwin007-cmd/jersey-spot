@@ -1,4 +1,4 @@
-import { sql, ensureSchema, checkAdminPassword } from '../_db.js';
+import { sql, ensureSchema, checkAdminPassword, sanitizePrice } from '../_db.js';
 import { destroyCloudinaryAsset } from '../_cloudinary.js';
 
 export default async function handler(req, res) {
@@ -13,12 +13,13 @@ export default async function handler(req, res) {
 
     if (req.method === 'PUT') {
       const { name, tag, category, price, sortOrder } = req.body || {};
+      const safePrice = price === undefined || price === null ? null : sanitizePrice(price);
       const [row] = await sql`
         UPDATE products SET
           name = COALESCE(${name}, name),
           tag = COALESCE(${tag}, tag),
           category = COALESCE(${category}, category),
-          price = COALESCE(${price}, price),
+          price = COALESCE(${safePrice}, price),
           sort_order = COALESCE(${sortOrder}, sort_order)
         WHERE id = ${id}
         RETURNING id, name, tag, category, price, image_url, cloudinary_public_id, sort_order, created_at

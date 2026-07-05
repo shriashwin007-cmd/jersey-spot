@@ -34,3 +34,12 @@ export function checkAdminPassword(req) {
   const expected = process.env.ADMIN_PASSWORD;
   return !!expected && provided === expected;
 }
+
+// price column is INTEGER (max ~2.1B); clamp to a sane rupee range so a
+// stray extra digit can't crash the insert with a Postgres range error.
+const MAX_PRICE = 999999;
+export function sanitizePrice(value) {
+  const n = Math.trunc(Number(value));
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.min(n, MAX_PRICE);
+}
