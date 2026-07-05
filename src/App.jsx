@@ -5,7 +5,6 @@ import CustomCursor from './components/CustomCursor';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Marquee from './components/Marquee';
-import CinematicShowcase from './components/CinematicShowcase';
 import StatsBand from './components/StatsBand';
 import BrandStory from './components/BrandStory';
 import WhatWeSell from './components/WhatWeSell';
@@ -64,7 +63,6 @@ export default function App() {
       <main id="main">
         <Hero />
         <Marquee />
-        <CinematicShowcase />
         <StatsBand />
         <BrandStory />
         <WhatWeSell />
