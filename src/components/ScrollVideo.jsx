@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useScroll } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 
 const FRAME_COUNT = 211;
 const framePath = (n) => `/scrollvid/frame_${String(n).padStart(4, '0')}.jpg`;
@@ -19,6 +19,17 @@ export default function ScrollVideo() {
   const [ready, setReady] = useState(false);
 
   const { scrollYProgress } = useScroll({ target: wrapRef, offset: ['start start', 'end end'] });
+
+  // Kinetic 3D caption text — bound directly to motion values via `style`
+  // (never through the `animate` prop), so this never touches WAAPI/Element.animate.
+  // The heading drifts further than the eyebrow (parallax depth) while a subtle
+  // rotateY gives it genuine 3D tilt as you scroll — like sliding through a deck.
+  const springCfg = { stiffness: 110, damping: 26, mass: 0.7 };
+  const rotateY = useSpring(useTransform(scrollYProgress, [0, 1], [-9, 9]), springCfg);
+  const eyebrowX = useSpring(useTransform(scrollYProgress, [0, 1], [-30, 70]), springCfg);
+  const eyebrowY = useSpring(useTransform(scrollYProgress, [0, 1], [10, -6]), springCfg);
+  const titleX = useSpring(useTransform(scrollYProgress, [0, 1], [-50, 110]), springCfg);
+  const titleY = useSpring(useTransform(scrollYProgress, [0, 1], [30, -28]), springCfg);
 
   const drawFrame = useCallback((idx) => {
     const canvas = canvasRef.current;
@@ -95,9 +106,13 @@ export default function ScrollVideo() {
           </div>
         )}
 
-        <div className="container scrollvid-caption">
-          <span className="eyebrow">Behind The Stitch</span>
-          <h2 className="section-title">Every Kit, <span className="g">Crafted To Move</span></h2>
+        <div className="container scrollvid-caption" style={{ perspective: 1000 }}>
+          <motion.div style={{ rotateY }}>
+            <motion.span className="eyebrow" style={{ x: eyebrowX, y: eyebrowY }}>Behind The Stitch</motion.span>
+            <motion.h2 className="section-title" style={{ x: titleX, y: titleY }}>
+              Every Kit, <span className="g">Crafted To Move</span>
+            </motion.h2>
+          </motion.div>
         </div>
       </div>
     </section>
