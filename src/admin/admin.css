@@ -79,11 +79,11 @@ button.danger { background: rgba(224,90,77,0.15); border: 1px solid rgba(224,90,
 /* ── List ── */
 .admin-empty { color: var(--text-muted); font-size: 14px; padding: 20px 0; text-align: center; }
 .admin-list { display: flex; flex-direction: column; gap: 10px; }
-.admin-row { display: flex; align-items: center; gap: 12px; background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.admin-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
 .admin-row-handle { color: var(--text-muted); cursor: grab; font-size: 16px; }
 .admin-row-thumb { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
 .admin-row-info { flex: 1; min-width: 0; }
-.admin-row-name { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.admin-row-name { font-weight: 600; font-size: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .admin-row-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; text-transform: capitalize; }
 .admin-row-edit { flex: 1; display: flex; gap: 8px; flex-wrap: wrap; }
 .admin-row-edit input, .admin-row-edit select { flex: 1; min-width: 90px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 13px; }
@@ -93,6 +93,14 @@ button.danger { background: rgba(224,90,77,0.15); border: 1px solid rgba(224,90,
 .admin-badge-soldout { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--danger); background: rgba(224,90,77,0.15); border: 1px solid rgba(224,90,77,0.35); padding: 2px 8px; border-radius: 10px; }
 .admin-badge-buyonline { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); background: rgba(232,185,35,0.15); border: 1px solid rgba(232,185,35,0.35); padding: 2px 8px; border-radius: 10px; }
 .admin-row-actions button { white-space: nowrap; }
+/* Below ~700px the desktop row (handle, thumb, name, actions, all on one
+   line) doesn't have room — actions used to overlap the name/thumb instead
+   of wrapping, since max-width:220px + justify-content:flex-end kept them
+   pinned to the right edge of whatever space was left. Forcing actions onto
+   their own full-width line fixes it without touching the JSX structure. */
+@media (max-width: 700px) {
+  .admin-row-actions { flex-basis: 100%; max-width: 100%; justify-content: flex-start; margin-top: 6px; }
+}
 
 .admin-error { background: rgba(224,90,77,0.12); border: 1px solid rgba(224,90,77,0.35); color: var(--danger); font-size: 13px; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; }
 

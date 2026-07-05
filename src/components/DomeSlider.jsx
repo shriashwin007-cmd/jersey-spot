@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { motion, useSpring, useMotionTemplate, useMotionValue } from 'framer-motion';
+import { useIsCompact } from '../hooks';
 
 // 3D "dome" coverflow: cards arranged along a shallow arc, spring-driven.
 // Transform is composed into a single string via useMotionTemplate — never
@@ -7,17 +8,33 @@ import { motion, useSpring, useMotionTemplate, useMotionValue } from 'framer-mot
 // transform keys like rotateY when framer accelerates them individually).
 const SPRING = { stiffness: 240, damping: 26, mass: 0.8 };
 
-function styleFor(offset) {
-  const abs = Math.abs(offset);
-  if (abs > 2) return null;
-  const table = {
+// Desktop offsets assume a wide stage; on narrow phones the same ±460px
+// spread would push side cards almost entirely off-screen (or, without
+// .dome-stage clipping them, silently force the whole page's mobile layout
+// viewport to zoom out to fit them — a real bug, not just a visual one).
+const TABLES = {
+  wide: {
     x: [-460, -230, 0, 230, 460],
     y: [26, 8, -14, 8, 26],       // dome curvature — outer cards sit lower
     scale: [0.72, 0.86, 1, 0.86, 0.72],
     rotateY: [34, 18, 0, -18, -34],
     opacity: [0, 0.75, 1, 0.75, 0],
     z: [-260, -90, 0, -90, -260],
-  };
+  },
+  compact: {
+    x: [-172, -92, 0, 92, 172],
+    y: [14, 5, -8, 5, 14],
+    scale: [0.66, 0.82, 1, 0.82, 0.66],
+    rotateY: [30, 16, 0, -16, -30],
+    opacity: [0, 0.7, 1, 0.7, 0],
+    z: [-140, -50, 0, -50, -140],
+  },
+};
+
+function styleFor(offset, compact) {
+  const abs = Math.abs(offset);
+  if (abs > 2) return null;
+  const table = compact ? TABLES.compact : TABLES.wide;
   const idx = offset + 2;
   return {
     x: table.x[idx], y: table.y[idx], scale: table.scale[idx],
@@ -25,8 +42,8 @@ function styleFor(offset) {
   };
 }
 
-function DomeCard({ item, offset, onClick, onAddToCart }) {
-  const style = styleFor(offset);
+function DomeCard({ item, offset, onClick, onAddToCart, compact }) {
+  const style = styleFor(offset, compact);
   const x = useSpring(useMotionValue(style?.x ?? 0), SPRING);
   const y = useSpring(useMotionValue(style?.y ?? 0), SPRING);
   const scale = useSpring(useMotionValue(style?.scale ?? 0.7), SPRING);
@@ -76,6 +93,7 @@ function DomeCard({ item, offset, onClick, onAddToCart }) {
 
 export default function DomeSlider({ items, onSelect, onAddToCart }) {
   const [active, setActive] = useState(0);
+  const compact = useIsCompact();
   const total = items.length;
   const next = useCallback(() => setActive((a) => (a + 1) % total), [total]);
   const prev = useCallback(() => setActive((a) => (a - 1 + total) % total), [total]);
@@ -104,6 +122,7 @@ export default function DomeSlider({ items, onSelect, onAddToCart }) {
               offset={offset}
               onClick={() => (offset === 0 ? onSelect && onSelect(item) : setActive(i))}
               onAddToCart={onAddToCart}
+              compact={compact}
             />
           );
         })}

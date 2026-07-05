@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { useIsCompact } from '../hooks';
 
 const FRAME_COUNT = 211;
 const framePath = (n) => `/scrollvid/frame_${String(n).padStart(4, '0')}.jpg`;
@@ -19,17 +20,21 @@ export default function ScrollVideo() {
   const [ready, setReady] = useState(false);
 
   const { scrollYProgress } = useScroll({ target: wrapRef, offset: ['start start', 'end end'] });
+  const compact = useIsCompact();
 
   // Kinetic 3D caption text — bound directly to motion values via `style`
   // (never through the `animate` prop), so this never touches WAAPI/Element.animate.
   // The heading drifts further than the eyebrow (parallax depth) while a subtle
   // rotateY gives it genuine 3D tilt as you scroll — like sliding through a deck.
+  // Drift distances are fixed px, tuned against a wide desktop container; on a
+  // ~360px-wide phone the same distance is a much bigger fraction of the
+  // screen and pushes the heading past the edge, so compact mode scales them down.
   const springCfg = { stiffness: 110, damping: 26, mass: 0.7 };
-  const rotateY = useSpring(useTransform(scrollYProgress, [0, 1], [-9, 9]), springCfg);
-  const eyebrowX = useSpring(useTransform(scrollYProgress, [0, 1], [-30, 70]), springCfg);
-  const eyebrowY = useSpring(useTransform(scrollYProgress, [0, 1], [10, -6]), springCfg);
-  const titleX = useSpring(useTransform(scrollYProgress, [0, 1], [-50, 110]), springCfg);
-  const titleY = useSpring(useTransform(scrollYProgress, [0, 1], [30, -28]), springCfg);
+  const rotateY = useSpring(useTransform(scrollYProgress, [0, 1], compact ? [-4, 4] : [-9, 9]), springCfg);
+  const eyebrowX = useSpring(useTransform(scrollYProgress, [0, 1], compact ? [-8, 18] : [-30, 70]), springCfg);
+  const eyebrowY = useSpring(useTransform(scrollYProgress, [0, 1], compact ? [4, -2] : [10, -6]), springCfg);
+  const titleX = useSpring(useTransform(scrollYProgress, [0, 1], compact ? [-12, 26] : [-50, 110]), springCfg);
+  const titleY = useSpring(useTransform(scrollYProgress, [0, 1], compact ? [10, -9] : [30, -28]), springCfg);
 
   const drawFrame = useCallback((idx) => {
     const canvas = canvasRef.current;
