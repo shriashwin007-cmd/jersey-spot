@@ -152,7 +152,7 @@
 .emb-bg-glow { position: absolute; width: 600px; height: 600px; top: 50%; left: 20%; transform: translateY(-50%); background: radial-gradient(circle, var(--gold-soft), transparent 70%); filter: blur(60px); }
 .emb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
 .emb-toggle { position: relative; display: inline-flex; gap: 4px; margin-top: 30px; padding: 5px; background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: var(--r-pill); }
-.emb-toggle-btn { position: relative; padding: 11px 26px; font-size: 14px; font-weight: 600; color: var(--text-muted); border-radius: var(--r-pill); z-index: 1; transition: color 0.25s; }
+.emb-toggle-btn { position: relative; padding: 11px 26px; font-size: 14px; font-weight: 600; color: var(--text-muted); background: none; border: none; border-radius: var(--r-pill); z-index: 1; transition: color 0.25s; }
 .emb-toggle-btn.active { color: #1a1300; }
 .emb-toggle-pill { position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, var(--gold-bright), var(--gold)); border-radius: var(--r-pill); }
 .emb-points { margin-top: 28px; display: flex; flex-direction: column; gap: 14px; }
@@ -294,6 +294,11 @@
 
 /* ── How It Works ── */
 .how-head { text-align: center; margin-bottom: 56px; }
+/* This heading mixes SplitText's inline-block/vertical-align:top words with
+   a plain trailing span — fine on one line, but once it wraps to 2 lines
+   (only happens at mobile widths) .section-title's razor-tight 1.08
+   line-height isn't enough room and the wrapped line overlaps the first. */
+.how-head .section-title { line-height: 1.35; }
 .how-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .how-card { position: relative; background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 30px 24px; transition: border-color 0.3s, transform 0.3s; overflow: hidden; }
 .how-card:hover { border-color: var(--gold-line); transform: translateY(-6px); }
