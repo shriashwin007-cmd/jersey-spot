@@ -2,25 +2,6 @@
    COMPONENT STYLES — Jersey Spot (black + gold)
 ═══════════════════════════════════════════════════════════════════════ */
 
-/* ── Text reveal: scroll-linked word-by-word reveal ────── */
-.text-reveal { position: relative; z-index: 2; height: 200vh; }
-.text-reveal-sticky {
-  position: sticky; top: 0; height: 100vh;
-  max-width: 880px; margin: 0 auto;
-  display: flex; align-items: center;
-  padding: 0 24px;
-}
-.text-reveal-p {
-  display: flex; flex-wrap: wrap;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(1.7rem, 4.2vw, 3.1rem);
-  line-height: 1.3;
-}
-.text-reveal-word { position: relative; margin: 0 0.32em 0.2em 0; }
-.text-reveal-word-bg { color: rgba(244,242,236,0.16); }
-.text-reveal-word-fg { position: absolute; top: 0; left: 0; color: var(--text); }
-
 /* ── Scroll progress ──────────────────────────────────── */
 .scroll-progress {
   position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 9998;
@@ -345,27 +326,6 @@
 .faq-a-wrap { overflow: hidden; }
 .faq-a { padding: 0 22px 22px; color: var(--text-muted); font-size: 0.95rem; line-height: 1.65; }
 @media (max-width: 820px) { .faq-grid { grid-template-columns: 1fr; gap: 34px; } .faq-head { position: static; } }
-
-/* ── Scroll-scrubbed video (canvas frame sequence) ────────
-   Wrapper is tall to create scroll distance; the inner .scrollvid-sticky
-   pins via position:sticky and fills the viewport while the canvas is
-   redrawn frame-by-frame based on scroll progress. */
-.scrollvid-wrap { position: relative; height: 490vh; background: #000; } /* 350vh * 1.4 = 40% slower scroll-scrub */
-.scrollvid-sticky { position: sticky; top: 0; height: 100vh; width: 100%; overflow: hidden; background: #000; }
-.scrollvid-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.scrollvid-overlay {
-  position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background: linear-gradient(0deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.25) 38%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.5) 100%);
-}
-.scrollvid-caption { position: absolute; left: 0; right: 0; bottom: 64px; z-index: 2; }
-.scrollvid-loading {
-  position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 14px; background: #000; color: var(--text-muted); font-size: 13px;
-  letter-spacing: 0.08em; text-transform: uppercase;
-}
-.scrollvid-loading-track { width: 200px; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.1); overflow: hidden; }
-.scrollvid-loading-fill { height: 100%; background: linear-gradient(90deg, var(--gold-deep), var(--gold-bright)); transition: width 0.2s ease; }
-@media (max-width: 720px) { .scrollvid-wrap { height: 392vh; } .scrollvid-caption { bottom: 40px; } }
 
 /* ── Cart drawer ───────────────────────────────────────── */
 .cart-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9500; backdrop-filter: blur(3px); }

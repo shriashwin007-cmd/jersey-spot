@@ -6,10 +6,8 @@ import CartDrawer from './components/CartDrawer';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Marquee from './components/Marquee';
-import ScrollVideo from './components/ScrollVideo';
 import StatsBand from './components/StatsBand';
 import BrandStory from './components/BrandStory';
-import TextReveal from './components/TextReveal';
 import WhatWeSell from './components/WhatWeSell';
 import Gallery from './components/Gallery';
 import Embroidery from './components/Embroidery';
@@ -65,17 +63,13 @@ export default function App() {
       <main id="main">
         <Hero />
         <Marquee />
-        <ScrollVideo />
         <StatsBand />
         <BrandStory />
-        <TextReveal text="Every jersey we sell in Chennai is checked by hand before it ever reaches you." />
         <WhatWeSell />
         <Gallery />
         <Embroidery />
-        <TextReveal text="Names stitched. Numbers set. Crests true to the club. Nothing leaves our workshop until it's right." />
         <HowItWorks />
         <WhyUs />
-        <TextReveal text="Thousands of players kitted since 2019 — and we're just getting started." />
         <Testimonials />
         <FAQ />
         <Contact />
