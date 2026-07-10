@@ -8,6 +8,7 @@ import Hero from './components/Hero';
 import Marquee from './components/Marquee';
 import StatsBand from './components/StatsBand';
 import BrandStory from './components/BrandStory';
+import ShopWall from './components/ShopWall';
 import WhatWeSell from './components/WhatWeSell';
 import Gallery from './components/Gallery';
 import Embroidery from './components/Embroidery';
@@ -65,6 +66,7 @@ export default function App() {
         <Marquee />
         <StatsBand />
         <BrandStory />
+        <ShopWall />
         <WhatWeSell />
         <Gallery />
         <Embroidery />
