@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, useInView, useMotionValue, useSpring, animate } from 'framer-motion';
+import { motion, useInView, useMotionValue, useSpring, useScroll, useTransform, animate } from 'framer-motion';
 
 /* Word-by-word reveal. Pass children as a string. Preserves markup via `parts`
    if you need coloured spans — here we keep it simple and split on spaces. */
@@ -70,6 +70,30 @@ export function Magnetic({ children, className, strength = 0.35, as = 'a', ...re
 function useSpringMV() {
   const mv = useMotionValue(0);
   return useSpring(mv, { stiffness: 300, damping: 20, mass: 0.5 });
+}
+
+/* Continuous scroll-linked photo entrance: slides in from the left or right
+   while rising up from below, then fades back out as it exits the top of
+   the viewport — tracks scroll position the whole time it's on screen
+   (not a one-shot "once" trigger like Reveal). Only ever animates x, y and
+   opacity as independent motion values bound via `style` — never mixed
+   with rotate — so it stays off the WAAPI-accelerated multi-transform path
+   this codebase avoids (any CSS tilt on the child is a separate element's
+   own `transform`, composed by plain CSS, not Framer). Works identically
+   on mobile/tablet/desktop since it's driven by page scroll position, not
+   viewport width. */
+export function ScrollPhoto({ children, className, direction = 'left', style }) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  const fromX = direction === 'left' ? -70 : 70;
+  const x = useTransform(scrollYProgress, [0, 0.3, 1], [fromX, 0, 0]);
+  const y = useTransform(scrollYProgress, [0, 0.25, 1], [70, 0, 0]);
+  const opacity = useTransform(scrollYProgress, [0, 0.15, 0.82, 1], [0, 1, 1, 0]);
+  return (
+    <motion.div ref={ref} className={className} style={{ x, y, opacity, ...style }}>
+      {children}
+    </motion.div>
+  );
 }
 
 /* Generic reveal wrapper */

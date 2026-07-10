@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Reveal } from './anim';
+import { Reveal, ScrollPhoto } from './anim';
 import { cld } from '../cloudinary';
 
 // Real photos from inside/outside the Chennai store. Cloudinary transforms
@@ -86,7 +86,7 @@ export default function ShopWall() {
 
         <div className="shopwall-grid" ref={trackRef}>
           {PHOTOS.map((p, i) => (
-            <Reveal key={p.id} className={`shopwall-item${p.tall ? ' tall' : ''}`} delay={(i % 4) * 0.06}>
+            <ScrollPhoto key={p.id} className={`shopwall-item${p.tall ? ' tall' : ''}`} direction={i % 2 === 0 ? 'left' : 'right'}>
               <div className="shopwall-card" style={{ '--tilt': `${TILTS[i % TILTS.length]}deg` }}>
                 <button
                   type="button"
@@ -108,7 +108,7 @@ export default function ShopWall() {
                   <ExpandIcon />
                 </button>
               </div>
-            </Reveal>
+            </ScrollPhoto>
           ))}
         </div>
 

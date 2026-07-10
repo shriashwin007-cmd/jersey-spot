@@ -149,6 +149,8 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.
   transition: transform 0.2s var(--ease), background 0.25s, border-color 0.25s, color 0.25s;
   white-space: nowrap;
 }
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0) scale(0.96); transition-duration: 0.1s; }
 .btn-gold {
   background: linear-gradient(180deg, var(--gold-bright), var(--gold));
   color: #1a1300;
