@@ -12,10 +12,21 @@ export default async function handler(req, res) {
     if (!checkAdminPassword(req)) return res.status(401).json({ error: 'Unauthorized' });
 
     if (req.method === 'PUT') {
-      const { name, tag, category, price, sortOrder, inStock, buyOnline } = req.body || {};
+      const { name, tag, category, price, sortOrder, inStock, buyOnline, imageUrl, cloudinaryPublicId } = req.body || {};
       const safePrice = price === undefined || price === null ? null : sanitizePrice(price);
       const safeInStock = inStock === undefined || inStock === null ? null : !!inStock;
       const safeBuyOnline = buyOnline === undefined || buyOnline === null ? null : !!buyOnline;
+      const newImageUrl = imageUrl || null;
+      const newPublicId = cloudinaryPublicId || null;
+
+      // When the image is being replaced (e.g. re-blurred), grab the old
+      // Cloudinary id first so we can delete that asset after the swap.
+      let oldPublicId = null;
+      if (newImageUrl) {
+        const [cur] = await sql`SELECT cloudinary_public_id FROM products WHERE id = ${id}`;
+        oldPublicId = cur?.cloudinary_public_id || null;
+      }
+
       const [row] = await sql`
         UPDATE products SET
           name = COALESCE(${name}, name),
@@ -24,13 +35,19 @@ export default async function handler(req, res) {
           price = COALESCE(${safePrice}, price),
           sort_order = COALESCE(${sortOrder}, sort_order),
           in_stock = COALESCE(${safeInStock}, in_stock),
-          buy_online = COALESCE(${safeBuyOnline}, buy_online)
+          buy_online = COALESCE(${safeBuyOnline}, buy_online),
+          image_url = COALESCE(${newImageUrl}, image_url),
+          cloudinary_public_id = COALESCE(${newPublicId}, cloudinary_public_id)
         WHERE id = ${id}
         RETURNING id, name, tag, category, price, image_url, cloudinary_public_id, sort_order, in_stock, buy_online, enquiry_clicks, created_at
       `;
       if (!row) return res.status(404).json({ error: 'Not found' });
       if (safeInStock !== null) {
         await logActivity('stock_toggled', `"${row.name}" marked ${row.in_stock ? 'in stock' : 'sold out'}`);
+      }
+      if (newImageUrl && oldPublicId && oldPublicId !== row.cloudinary_public_id) {
+        await destroyCloudinaryAsset(oldPublicId);
+        await logActivity('logo_blurred', `Updated image for "${row.name}"`);
       }
       return res.status(200).json({ product: row });
     }

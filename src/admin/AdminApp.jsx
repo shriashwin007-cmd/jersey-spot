@@ -37,9 +37,10 @@ async function uploadToCloudinary(file) {
   return data; // { secure_url, public_id, ... }
 }
 
-function loadImage(src) {
+function loadImage(src, cors = false) {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    if (cors) img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
     img.onerror = reject;
     img.src = src;
@@ -53,9 +54,18 @@ function loadImage(src) {
 // file untouched when there are no spots.
 const DEFAULT_SPOT_R = 0.09; // spot radius as a fraction of the image's short side
 
-async function bakeBlurSpots(file, spots) {
-  if (!spots?.length) return file;
-  const img = await loadImage(URL.createObjectURL(file));
+// `source` is either a File (new upload) or a remote image URL (re-blurring
+// an existing catalog product, loaded cross-origin so the canvas isn't tainted
+// — Cloudinary sends the CORS header). Returns a new JPEG File, or null for a
+// URL source with no spots (nothing to change).
+async function bakeBlurSpots(source, spots) {
+  const isUrl = typeof source === 'string';
+  if (!spots?.length) return isUrl ? null : source;
+  // Cache-buster on the CORS load: if the same URL was already cached without
+  // CORS headers (e.g. as a plain <img> thumbnail), reusing it would taint the
+  // canvas and block toBlob. A unique param forces a fresh CORS-enabled fetch.
+  const loadSrc = isUrl ? `${source}${source.includes('?') ? '&' : '?'}_cors=${Date.now()}` : URL.createObjectURL(source);
+  const img = await loadImage(loadSrc, isUrl);
   const w = img.naturalWidth, h = img.naturalHeight;
   const short = Math.min(w, h);
 
@@ -86,7 +96,8 @@ async function bakeBlurSpots(file, spots) {
   }
 
   const blob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.92));
-  return new File([blob], (file.name || 'jersey').replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+  const baseName = isUrl ? 'jersey' : (source.name || 'jersey');
+  return new File([blob], baseName.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
 }
 
 function LoginGate({ onLogin }) {
@@ -420,6 +431,29 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
   const [category, setCategory] = useState(p.category);
   const [price, setPrice] = useState(p.price);
   const [busy, setBusy] = useState(false);
+  const [blurOpen, setBlurOpen] = useState(false);
+
+  // Blur logos on a product that's ALREADY in the catalog: bake the spots onto
+  // its current image, upload the blurred version, and point the product at it
+  // (the API deletes the old Cloudinary asset).
+  const saveBlur = async (spots) => {
+    setBlurOpen(false);
+    if (!spots.length) return;
+    setBusy(true);
+    try {
+      const file = await bakeBlurSpots(p.image_url, spots);
+      const uploaded = await uploadToCloudinary(file);
+      const { product } = await api(`/api/products/${p.id}`, {
+        method: 'PUT', password,
+        body: JSON.stringify({ imageUrl: uploaded.secure_url, cloudinaryPublicId: uploaded.public_id }),
+      });
+      onUpdated(product);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const save = async () => {
     setBusy(true);
@@ -516,11 +550,20 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
             <button className="ghost" disabled={busy} onClick={toggleBuyOnline}>
               {p.buy_online ? 'Disable Buy Online' : 'Enable Buy Online'}
             </button>
+            <button className="ghost" disabled={busy} onClick={() => setBlurOpen(true)}>{busy ? 'Working…' : 'Blur Logo'}</button>
             <button className="ghost" disabled={busy} onClick={() => setEditing(true)}>Edit</button>
             <button className="danger" disabled={busy} onClick={del}>Delete</button>
           </>
         )}
       </div>
+
+      {blurOpen && (
+        <BlurEditor
+          item={{ preview: p.image_url, blurSpots: [] }}
+          onSave={saveBlur}
+          onClose={() => setBlurOpen(false)}
+        />
+      )}
     </div>
   );
 }

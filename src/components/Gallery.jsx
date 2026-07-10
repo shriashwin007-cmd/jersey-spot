@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import DomeSlider from './DomeSlider';
+import ProductModal from './ProductModal';
 import { useCart } from '../cart';
 import { SHOP, waLink } from '../config';
 
@@ -28,7 +29,19 @@ const DEEP_LINK_EVENT = 'jersey:filter-category';
 export default function Gallery() {
   const [kits, setKits] = useState(FALLBACK_KITS);
   const [filter, setFilter] = useState('all');
+  const [preview, setPreview] = useState(null);
   const { addItem } = useCart();
+
+  const enquire = (item) => {
+    if (item.id) {
+      fetch('/api/track-enquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: item.id }),
+      }).catch(() => {});
+    }
+    window.open(waLink(item.msg), '_blank', 'noopener');
+  };
 
   useEffect(() => {
     // Gallery mounts once on initial page load — a plain "read sessionStorage
@@ -108,16 +121,7 @@ export default function Gallery() {
           <DomeSlider
             key={filter}
             items={filtered}
-            onSelect={(item) => {
-              if (item.id) {
-                fetch('/api/track-enquiry', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ productId: item.id }),
-                }).catch(() => {});
-              }
-              window.open(waLink(item.msg), '_blank', 'noopener');
-            }}
+            onSelect={(item) => setPreview(item)}
             onAddToCart={(item) => addItem({ id: item.id, name: item.name, price: item.price, img: item.img })}
           />
         )}
@@ -134,6 +138,13 @@ export default function Gallery() {
           </a>
         </motion.div>
       </div>
+
+      <ProductModal
+        product={preview}
+        onClose={() => setPreview(null)}
+        onAddToCart={(item) => addItem({ id: item.id, name: item.name, price: item.price, img: item.img })}
+        onEnquire={enquire}
+      />
     </section>
   );
 }
