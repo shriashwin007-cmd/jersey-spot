@@ -82,7 +82,7 @@ function AddressStep({ subtotal, onBack, onPaid }) {
         name: 'Jersey Spot',
         description: `Order #${order.orderId}`,
         prefill: { name: form.name, contact: form.phone, email: form.email },
-        theme: { color: '#e8b923' },
+        theme: { color: '#e8302a' },
         handler: async (response) => {
           try {
             const verifyRes = await fetch('/api/checkout/verify', {

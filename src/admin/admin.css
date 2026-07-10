@@ -1,6 +1,6 @@
 :root {
-  --gold: #e8b923;
-  --gold-bright: #ffd24a;
+  --gold: #e8302a;
+  --gold-bright: #ff4d4d;
   --bg: #000;
   --bg-elev: #121214;
   --bg-elev-2: #1a1a1d;
@@ -47,7 +47,7 @@ button.danger { background: rgba(224,90,77,0.15); border: 1px solid rgba(224,90,
   color: var(--text-muted); font-size: 13px; text-align: center; padding: 16px; cursor: pointer;
   transition: border-color 0.2s, background 0.2s; margin-bottom: 16px; overflow: hidden;
 }
-.admin-drop.over { border-color: var(--gold); background: rgba(232,185,35,0.06); }
+.admin-drop.over { border-color: var(--gold); background: rgba(232,48,42,0.06); }
 .admin-drop.has-file { padding: 0; }
 .admin-drop img { width: 100%; max-height: 220px; object-fit: cover; display: block; }
 .admin-drop-icon { font-size: 28px; }
@@ -91,7 +91,7 @@ button.danger { background: rgba(224,90,77,0.15); border: 1px solid rgba(224,90,
 .admin-row.sold-out { opacity: 0.55; }
 .admin-row.sold-out .admin-row-thumb { filter: grayscale(0.6); }
 .admin-badge-soldout { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--danger); background: rgba(224,90,77,0.15); border: 1px solid rgba(224,90,77,0.35); padding: 2px 8px; border-radius: 10px; }
-.admin-badge-buyonline { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); background: rgba(232,185,35,0.15); border: 1px solid rgba(232,185,35,0.35); padding: 2px 8px; border-radius: 10px; }
+.admin-badge-buyonline { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); background: rgba(232,48,42,0.15); border: 1px solid rgba(232,48,42,0.35); padding: 2px 8px; border-radius: 10px; }
 .admin-row-actions button { white-space: nowrap; }
 /* Below ~700px the desktop row (handle, thumb, name, actions, all on one
    line) doesn't have room — actions used to overlap the name/thumb instead

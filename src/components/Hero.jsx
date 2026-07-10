@@ -94,11 +94,11 @@ export default function Hero() {
                   <stop offset="100%" stopColor="#050505" />
                 </radialGradient>
               </defs>
-              <circle cx="50" cy="50" r="47" fill="url(#hb)" stroke="#e8b923" strokeWidth="1.4" />
-              <polygon points="50,20 61,28 57,41 43,41 39,28" fill="#e8b923" />
-              <polygon points="76,44 80,57 70,65 61,56 66,44" fill="#1a1a1d" stroke="#e8b923" strokeWidth="0.8"/>
-              <polygon points="59,74 47,79 37,71 42,59 55,61" fill="#1a1a1d" stroke="#e8b923" strokeWidth="0.8"/>
-              <polygon points="24,44 33,44 38,56 29,65 19,57" fill="#1a1a1d" stroke="#e8b923" strokeWidth="0.8"/>
+              <circle cx="50" cy="50" r="47" fill="url(#hb)" stroke="#e8302a" strokeWidth="1.4" />
+              <polygon points="50,20 61,28 57,41 43,41 39,28" fill="#e8302a" />
+              <polygon points="76,44 80,57 70,65 61,56 66,44" fill="#1a1a1d" stroke="#e8302a" strokeWidth="0.8"/>
+              <polygon points="59,74 47,79 37,71 42,59 55,61" fill="#1a1a1d" stroke="#e8302a" strokeWidth="0.8"/>
+              <polygon points="24,44 33,44 38,56 29,65 19,57" fill="#1a1a1d" stroke="#e8302a" strokeWidth="0.8"/>
             </svg>
           </motion.div>
           {['⚽', '👕', '🥅', '👟'].map((e, i) => (

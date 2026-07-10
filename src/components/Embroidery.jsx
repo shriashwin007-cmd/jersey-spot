@@ -37,8 +37,8 @@ function JerseyBase({ children }) {
           <stop offset="100%" stopColor="#0a0a0b" />
         </linearGradient>
       </defs>
-      <path d="M70 26 L48 38 L26 70 L46 88 L60 76 V196 H140 V76 L154 88 L174 70 L152 38 L130 26 Q100 46 70 26Z" fill="url(#embFab)" stroke="#e8b923" strokeWidth="2" />
-      <path d="M80 30 Q100 44 120 30" fill="none" stroke="#e8b923" strokeWidth="2" />
+      <path d="M70 26 L48 38 L26 70 L46 88 L60 76 V196 H140 V76 L154 88 L174 70 L152 38 L130 26 Q100 46 70 26Z" fill="url(#embFab)" stroke="#e8302a" strokeWidth="2" />
+      <path d="M80 30 Q100 44 120 30" fill="none" stroke="#e8302a" strokeWidth="2" />
       {children}
     </svg>
   );
@@ -47,9 +47,9 @@ function JerseyBase({ children }) {
 function EmbroideredJersey() {
   return (
     <JerseyBase>
-      <circle cx="100" cy="103" r="40" fill="none" stroke="#e8b923" strokeWidth="1.4" strokeDasharray="4 5" opacity="0.55" />
-      <text x="100" y="120" fontSize="52" fontWeight="800" fontFamily="Inter, sans-serif" fill="#e8b923" stroke="#b8901a" strokeWidth="1.2" textAnchor="middle">10</text>
-      <text x="100" y="164" fontSize="16" fontWeight="700" letterSpacing="3" fontFamily="Inter, sans-serif" fill="#e8b923" textAnchor="middle">CHENNAI</text>
+      <circle cx="100" cy="103" r="40" fill="none" stroke="#e8302a" strokeWidth="1.4" strokeDasharray="4 5" opacity="0.55" />
+      <text x="100" y="120" fontSize="52" fontWeight="800" fontFamily="Inter, sans-serif" fill="#e8302a" stroke="#a4161a" strokeWidth="1.2" textAnchor="middle">10</text>
+      <text x="100" y="164" fontSize="16" fontWeight="700" letterSpacing="3" fontFamily="Inter, sans-serif" fill="#e8302a" textAnchor="middle">CHENNAI</text>
     </JerseyBase>
   );
 }

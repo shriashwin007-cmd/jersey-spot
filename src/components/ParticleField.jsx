@@ -43,9 +43,9 @@ export default function ParticleField() {
     spriteCanvas.width = spriteCanvas.height = 64;
     const ctx = spriteCanvas.getContext('2d');
     const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-    grad.addColorStop(0, 'rgba(255,220,120,1)');
-    grad.addColorStop(0.4, 'rgba(232,185,35,0.7)');
-    grad.addColorStop(1, 'rgba(232,185,35,0)');
+    grad.addColorStop(0, 'rgba(255,140,120,1)');
+    grad.addColorStop(0.4, 'rgba(232,48,42,0.7)');
+    grad.addColorStop(1, 'rgba(232,48,42,0)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 64, 64);
     const sprite = new THREE.CanvasTexture(spriteCanvas);

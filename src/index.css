@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   JERSEY SPOT CHENNAI — black + gold theme
+   JERSEY SPOT CHENNAI — black + red theme
    Design tokens → base → utilities. Component CSS lives in ./styles/*.css
 ═══════════════════════════════════════════════════════════════════════ */
 
@@ -13,12 +13,12 @@
   --bg-elev-2:    #121214;   /* card */
   --bg-elev-3:    #1a1a1d;   /* hover card */
 
-  --gold:         #e8b923;   /* primary brand gold */
-  --gold-bright:  #ffd24a;   /* highlight */
-  --gold-deep:    #b8901a;   /* pressed / shadow */
-  --gold-soft:    rgba(232,185,35,0.12);
-  --gold-line:    rgba(232,185,35,0.22);
-  --gold-glow:    rgba(232,185,35,0.30);
+  --gold:         #e8302a;   /* primary brand red — ~4.9:1 on black, safe for text */
+  --gold-bright:  #ff4d4d;   /* highlight — ~6.4:1 on black */
+  --gold-deep:    #a4161a;   /* pressed / shadow, decorative only */
+  --gold-soft:    rgba(232,48,42,0.12);
+  --gold-line:    rgba(232,48,42,0.22);
+  --gold-glow:    rgba(232,48,42,0.30);
 
   --wa-green:        #0e8542;  /* passes 4.5:1 with white 14px/600 text */
   --wa-green-bright:  #129950; /* hover only, transient state */
@@ -49,7 +49,7 @@
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
   --shadow-md: 0 12px 32px rgba(0,0,0,0.5);
   --shadow-lg: 0 30px 70px rgba(0,0,0,0.6);
-  --shadow-gold: 0 12px 40px rgba(232,185,35,0.16);
+  --shadow-gold: 0 12px 40px rgba(232,48,42,0.16);
 
   /* ── Layout ── */
   --nav-h: 74px;
@@ -70,7 +70,7 @@ body {
   overflow-x: hidden;
 }
 
-/* subtle gold vignette on the whole page */
+/* subtle red vignette on the whole page */
 body::before {
   content: '';
   position: fixed;
@@ -78,8 +78,8 @@ body::before {
   pointer-events: none;
   z-index: 1;
   background:
-    radial-gradient(ellipse 120% 80% at 50% -10%, rgba(232,185,35,0.05), transparent 55%),
-    radial-gradient(ellipse 90% 60% at 50% 110%, rgba(232,185,35,0.03), transparent 60%);
+    radial-gradient(ellipse 120% 80% at 50% -10%, rgba(232,48,42,0.05), transparent 55%),
+    radial-gradient(ellipse 90% 60% at 50% 110%, rgba(232,48,42,0.03), transparent 60%);
 }
 
 img { max-width: 100%; display: block; }
@@ -154,7 +154,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.
   color: #1a1300;
   box-shadow: var(--shadow-gold);
 }
-.btn-gold:hover { background: linear-gradient(180deg, #ffdf6b, var(--gold-bright)); }
+.btn-gold:hover { background: linear-gradient(180deg, #ff7a70, var(--gold-bright)); }
 .btn-ghost {
   background: rgba(255,255,255,0.03);
   border-color: var(--border-strong);

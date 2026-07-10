@@ -65,8 +65,8 @@
 .hero { position: relative; min-height: 100vh; min-height: 100svh; display: flex; align-items: center; padding: calc(var(--nav-h) + 40px) 0 60px; overflow: hidden; }
 .hero-bg { position: absolute; inset: 0; z-index: 0; }
 .hero-glow { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5; }
-.hero-glow-1 { width: 620px; height: 620px; top: -180px; right: -120px; background: radial-gradient(circle, rgba(232,185,35,0.22), transparent 70%); }
-.hero-glow-2 { width: 520px; height: 520px; bottom: -200px; left: -160px; background: radial-gradient(circle, rgba(232,185,35,0.10), transparent 70%); }
+.hero-glow-1 { width: 620px; height: 620px; top: -180px; right: -120px; background: radial-gradient(circle, rgba(232,48,42,0.22), transparent 70%); }
+.hero-glow-2 { width: 520px; height: 520px; bottom: -200px; left: -160px; background: radial-gradient(circle, rgba(232,48,42,0.10), transparent 70%); }
 .hero-grid { position: absolute; inset: 0; opacity: 0.4; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 64px 64px; mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 40%, transparent 80%); -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 40%, transparent 80%); }
 .particle-field { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.85; }
 
