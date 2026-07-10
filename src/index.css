@@ -33,7 +33,7 @@
   --border-strong:rgba(255,255,255,0.14);
 
   /* ── Type ── */
-  --font-display: 'Playfair Display', Georgia, serif;   /* elegant headlines */
+  --font-display: 'Bricolage Grotesque Variable', 'Space Grotesk', sans-serif;   /* unique display grotesque */
   --font-body:    'Inter', system-ui, -apple-system, sans-serif;
   --font-ui:      'Space Grotesk', 'Inter', sans-serif; /* modern UI/labels */
   --font-impact:  'Bebas Neue', 'Space Grotesk', sans-serif; /* big sporty numbers */
@@ -126,7 +126,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.
   color: var(--text);
   margin: 18px 0 0;
 }
-.section-title .g { color: var(--gold); font-style: italic; }
+.section-title .g { color: var(--gold); font-weight: 800; }
 
 .section-lead {
   font-size: clamp(1rem, 1.4vw, 1.15rem);

@@ -86,19 +86,16 @@ function useSpringMV() {
 export function ScrollPhoto({ children, className, direction = 'left', style }) {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  // Deliberately BIG travel so the motion is unmistakable: each card flies in
-  // from far off to the side + up from well below, sits centred while it's in
-  // view, then flies back out the opposite way and fades — a full pass, not a
-  // tiny nudge. A spring gives it weight instead of rigidly tracking scroll.
+  // Big, unmistakable travel: each card flies in from far off to the side + up
+  // from well below, sits centred while in view, then flies back out and fades.
+  // Bound as RAW scroll-derived transforms (no useSpring) — Lenis already
+  // smooths the scroll input, so springs on top just add 3 physics loops per
+  // card (24 across this grid) for no benefit, which was the Mac scroll jank.
   const fromX = direction === 'left' ? -260 : 260;
-  const xRaw = useTransform(scrollYProgress, [0, 0.42, 0.62, 1], [fromX, 0, 0, -fromX * 0.55]);
-  const yRaw = useTransform(scrollYProgress, [0, 0.42, 0.62, 1], [160, 0, 0, -110]);
-  const scaleRaw = useTransform(scrollYProgress, [0, 0.42, 0.62, 1], [0.7, 1, 1, 0.86]);
+  const x = useTransform(scrollYProgress, [0, 0.42, 0.62, 1], [fromX, 0, 0, -fromX * 0.55]);
+  const y = useTransform(scrollYProgress, [0, 0.42, 0.62, 1], [160, 0, 0, -110]);
+  const scale = useTransform(scrollYProgress, [0, 0.42, 0.62, 1], [0.7, 1, 1, 0.86]);
   const opacity = useTransform(scrollYProgress, [0, 0.22, 0.8, 1], [0, 1, 1, 0]);
-  const spring = { stiffness: 140, damping: 28, mass: 0.5 };
-  const x = useSpring(xRaw, spring);
-  const y = useSpring(yRaw, spring);
-  const scale = useSpring(scaleRaw, spring);
   return (
     <motion.div ref={ref} className={className} style={{ x, y, scale, opacity, ...style }}>
       {children}
@@ -111,8 +108,9 @@ export function ScrollPhoto({ children, className, direction = 'left', style }) 
    `mobile` / `desktop` are the total vertical travel in px across the
    element's full pass through the viewport — tuned separately because the
    same px travel reads much stronger on a short phone viewport than a tall
-   desktop one, and heavy parallax on mobile is disorienting. A spring
-   smooths the raw scroll value so it feels weighty, not twitchy. Only ever
+   desktop one, and heavy parallax on mobile is disorienting. Bound as a RAW
+   scroll-derived transform (no useSpring) — Lenis already smooths scroll, so
+   a spring on top is just extra per-frame physics for no gain. Only ever
    drives `y` via `style` (never combined with rotate) — safe under Safari
    WAAPI, same rule as the rest of this file. Respects reduced-motion. */
 export function Parallax({ children, className, mobile = 24, desktop = 80, style }) {
@@ -121,8 +119,7 @@ export function Parallax({ children, className, mobile = 24, desktop = 80, style
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const travel = reduce ? 0 : (compact ? mobile : desktop);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const rawY = useTransform(scrollYProgress, [0, 1], [travel, -travel]);
-  const y = useSpring(rawY, { stiffness: 120, damping: 30, mass: 0.6 });
+  const y = useTransform(scrollYProgress, [0, 1], [travel, -travel]);
   return (
     <motion.div ref={ref} className={className} style={{ y, ...style }}>
       {children}

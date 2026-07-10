@@ -24,10 +24,11 @@ export default function Hero() {
   // gaps even at the extreme.
   const photoY = useTransform(scrollYProgress, [0, 1], [0, 200]);
   const photoScale = useTransform(scrollYProgress, [0, 1], [1, 1.25]);
-  // Desktop parallax: the two blurred glow orbs drift far in opposite
-  // directions at different rates for strong ambient depth behind the copy.
-  const glow1Y = useTransform(scrollYProgress, [0, 1], [0, 320]);
-  const glow2Y = useTransform(scrollYProgress, [0, 1], [0, -260]);
+  // Desktop parallax: the two blurred glow orbs drift in opposite directions
+  // for ambient depth. Kept modest — they're blur(90px), so a big move is
+  // imperceptible but forces more of the layer to repaint.
+  const glow1Y = useTransform(scrollYProgress, [0, 1], [0, 150]);
+  const glow2Y = useTransform(scrollYProgress, [0, 1], [0, -120]);
 
   const fadeUp = (d = 0) => ({
     initial: { opacity: 0, y: 34 },
