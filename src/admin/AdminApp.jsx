@@ -51,13 +51,13 @@ function loadImage(src) {
 // canvas — the logo-blurred version is what gets uploaded, so the original
 // with visible brand marks never leaves the browser. Returns the original
 // file untouched when there are no spots.
+const DEFAULT_SPOT_R = 0.09; // spot radius as a fraction of the image's short side
+
 async function bakeBlurSpots(file, spots) {
   if (!spots?.length) return file;
   const img = await loadImage(URL.createObjectURL(file));
   const w = img.naturalWidth, h = img.naturalHeight;
   const short = Math.min(w, h);
-  const radius = Math.round(short * 0.11);   // spot size
-  const blurPx = Math.max(4, Math.round(short * 0.025)); // "slight" blur
 
   const canvas = document.createElement('canvas');
   canvas.width = w; canvas.height = h;
@@ -66,6 +66,8 @@ async function bakeBlurSpots(file, spots) {
 
   for (const s of spots) {
     const cx = s.x * w, cy = s.y * h;
+    const radius = Math.round(short * (s.r || DEFAULT_SPOT_R)); // per-spot size
+    const blurPx = Math.max(4, Math.round(radius * 0.5));       // blur scales with size
     // Render a fully-blurred copy, then keep only a feathered circle of it
     // via a radial-gradient alpha mask, and composite that onto the sharp base.
     const t = document.createElement('canvas');
@@ -129,20 +131,72 @@ function LoginGate({ onLogin }) {
   );
 }
 
-// Tap-to-blur editor: shows the photo; tapping adds a soft blur spot at that
-// point, tapping an existing spot removes it. Coordinates are stored 0–1 so
-// they survive the later resize when baked onto the full-res image.
-function BlurEditor({ item, onSave, onClose }) {
-  const [spots, setSpots] = useState(item.blurSpots || []);
-  const imgRef = useRef(null);
+// Tap-to-blur editor. Tap empty area → add a spot (auto-selected). Drag a spot
+// to move it, drag its edge handle (or use the slider) to resize. Each spot is
+// {x,y,r} normalized (x/y are 0–1 of the image; r is a fraction of the short
+// side) so they map straight onto the full-res image at bake time.
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
-  const onImgClick = (e) => {
-    const r = imgRef.current.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width;
-    const y = (e.clientY - r.top) / r.height;
-    setSpots((prev) => [...prev, { x, y }]);
+function BlurEditor({ item, onSave, onClose }) {
+  const [spots, setSpots] = useState(() => (item.blurSpots || []).map((s) => ({ r: DEFAULT_SPOT_R, ...s })));
+  const [selected, setSelected] = useState(null);
+  const [dims, setDims] = useState({ w: 0, h: 0 });
+  const imgRef = useRef(null);
+  const drag = useRef(null);
+
+  useEffect(() => {
+    const el = imgRef.current;
+    if (!el) return;
+    const measure = () => setDims({ w: el.clientWidth, h: el.clientHeight });
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    if (el.complete) measure();
+    else el.addEventListener('load', measure);
+    return () => ro.disconnect();
+  }, []);
+
+  const short = Math.min(dims.w, dims.h) || 1;
+
+  const rectOf = () => imgRef.current.getBoundingClientRect();
+
+  const addSpot = (e) => {
+    const r = rectOf();
+    const x = clamp((e.clientX - r.left) / r.width, 0, 1);
+    const y = clamp((e.clientY - r.top) / r.height, 0, 1);
+    setSpots((prev) => { const next = [...prev, { x, y, r: DEFAULT_SPOT_R }]; setSelected(next.length - 1); return next; });
   };
-  const removeSpot = (i, e) => { e.stopPropagation(); setSpots((prev) => prev.filter((_, idx) => idx !== i)); };
+
+  const onMove = (e) => {
+    const d = drag.current; if (!d) return;
+    e.preventDefault();
+    const r = d.rect;
+    setSpots((prev) => prev.map((s, i) => {
+      if (i !== d.i) return s;
+      if (d.mode === 'move') {
+        return { ...s, x: clamp((e.clientX - r.left) / r.width, 0, 1), y: clamp((e.clientY - r.top) / r.height, 0, 1) };
+      }
+      const cx = s.x * r.width, cy = s.y * r.height;
+      const dist = Math.hypot((e.clientX - r.left) - cx, (e.clientY - r.top) - cy);
+      return { ...s, r: clamp(dist / Math.min(r.width, r.height), 0.03, 0.35) };
+    }));
+  };
+  const endDrag = () => {
+    drag.current = null;
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', endDrag);
+  };
+  const startDrag = (mode, i, e) => {
+    e.stopPropagation();
+    setSelected(i);
+    drag.current = { mode, i, rect: rectOf() };
+    window.addEventListener('pointermove', onMove, { passive: false });
+    window.addEventListener('pointerup', endDrag);
+  };
+
+  const removeSelected = () => { setSpots((prev) => prev.filter((_, i) => i !== selected)); setSelected(null); };
+  const setR = (r) => setSpots((prev) => prev.map((s, i) => (i === selected ? { ...s, r } : s)));
+
+  const sel = selected != null ? spots[selected] : null;
 
   return (
     <div className="blur-modal" onClick={onClose}>
@@ -150,29 +204,50 @@ function BlurEditor({ item, onSave, onClose }) {
         <div className="blur-modal-head">
           <div>
             <h3>Blur logos</h3>
-            <p>Tap each logo (Nike swoosh, brand marks). Tap a spot again to remove it.</p>
+            <p>Tap a logo to add a blur. Drag it to move, drag the handle or use the slider to resize.</p>
           </div>
           <button type="button" className="ghost" onClick={onClose} aria-label="Close">✕</button>
         </div>
 
-        <div className="blur-stage">
-          <img ref={imgRef} src={item.preview} alt="" onClick={onImgClick} draggable={false} />
-          {spots.map((s, i) => (
-            <button
-              type="button"
-              key={i}
-              className="blur-spot"
-              style={{ left: `${s.x * 100}%`, top: `${s.y * 100}%` }}
-              onClick={(e) => removeSpot(i, e)}
-              aria-label={`Remove blur spot ${i + 1}`}
-            />
-          ))}
+        <div className="blur-stage" onPointerDown={addSpot}>
+          <img ref={imgRef} src={item.preview} alt="" draggable={false} />
+          {spots.map((s, i) => {
+            const size = 2 * s.r * short;
+            return (
+              <div
+                key={i}
+                className={`blur-spot${i === selected ? ' selected' : ''}`}
+                style={{ left: `${s.x * dims.w}px`, top: `${s.y * dims.h}px`, width: `${size}px`, height: `${size}px` }}
+                onPointerDown={(e) => startDrag('move', i, e)}
+              >
+                {i === selected && (
+                  <span
+                    className="blur-spot-handle"
+                    onPointerDown={(e) => startDrag('resize', i, e)}
+                    aria-label="Resize"
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
 
+        {sel && (
+          <div className="blur-size-row">
+            <span>Size</span>
+            <input
+              type="range" min="0.03" max="0.35" step="0.005"
+              value={sel.r}
+              onChange={(e) => setR(Number(e.target.value))}
+            />
+            <button type="button" className="blur-del" onClick={removeSelected} aria-label="Delete this blur">Delete</button>
+          </div>
+        )}
+
         <div className="blur-modal-actions">
-          <span className="blur-count">{spots.length} spot{spots.length === 1 ? '' : 's'}</span>
+          <span className="blur-count">{spots.length} blur{spots.length === 1 ? '' : 's'}</span>
           <div>
-            <button type="button" className="ghost" onClick={() => setSpots([])} disabled={!spots.length}>Clear all</button>
+            <button type="button" className="ghost" onClick={() => { setSpots([]); setSelected(null); }} disabled={!spots.length}>Clear all</button>
             <button type="button" className="blur-save" onClick={() => onSave(spots)}>Done</button>
           </div>
         </div>
