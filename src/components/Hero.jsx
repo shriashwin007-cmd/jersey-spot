@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Magnetic } from './anim';
 import ParticleField from './ParticleField';
 import { useIsCompact } from '../hooks';
+import { cld } from '../cloudinary';
 import { waLink, SHOP } from '../config';
 
 const STATS = [
@@ -28,6 +29,10 @@ export default function Hero() {
     <section className="hero" id="home" ref={ref}>
       {/* backdrop */}
       <div className="hero-bg" aria-hidden>
+        {/* Real store photo, mobile only (CSS-hidden on desktop, which keeps
+            its particle field instead) — a bold photo backdrop reads much
+            better on a phone than empty space above the fold. */}
+        <div className="hero-photo" style={{ backgroundImage: `url(${cld('https://res.cloudinary.com/hwm5h6fh/image/upload/v1783697714/WhatsApp_Image_2026-07-10_at_1.57.12_PM_c6geip.jpg', 'f_auto,q_auto,w_900')})` }} />
         <div className="hero-glow hero-glow-1" />
         <div className="hero-glow hero-glow-2" />
         <div className="hero-grid" />
