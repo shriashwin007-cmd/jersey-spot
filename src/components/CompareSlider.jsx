@@ -42,12 +42,7 @@ export default function CompareSlider({ before, after, leftLabel, rightLabel, cl
   };
 
   return (
-    <div
-      ref={ref}
-      className={`compare-slider ${className}`}
-      onPointerDown={onDown}
-      onTouchStart={onDown}
-    >
+    <div ref={ref} className={`compare-slider ${className}`}>
       <div className="compare-layer compare-before">{before}</div>
       <div className="compare-layer compare-after" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
         {after}
@@ -56,6 +51,8 @@ export default function CompareSlider({ before, after, leftLabel, rightLabel, cl
       {leftLabel && <span className="compare-badge compare-badge-l" style={{ opacity: pos > 14 ? 1 : 0 }}>{leftLabel}</span>}
       {rightLabel && <span className="compare-badge compare-badge-r" style={{ opacity: pos < 86 ? 1 : 0 }}>{rightLabel}</span>}
 
+      {/* Drag only starts here — not from tapping/dragging anywhere on the
+          image — so scrolling the page past this component works normally. */}
       <div
         className="compare-handle"
         style={{ left: `${pos}%` }}
@@ -66,6 +63,8 @@ export default function CompareSlider({ before, after, leftLabel, rightLabel, cl
         aria-valuemin={0}
         aria-valuemax={100}
         onKeyDown={onKeyDown}
+        onPointerDown={onDown}
+        onTouchStart={onDown}
       >
         <span className="compare-handle-grip">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M8 5 3 12l5 7M16 5l5 7-5 7" /></svg>
