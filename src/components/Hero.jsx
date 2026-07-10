@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Magnetic } from './anim';
 import ParticleField from './ParticleField';
+import { useIsCompact } from '../hooks';
 import { waLink, SHOP } from '../config';
 
 const STATS = [
@@ -12,6 +13,7 @@ const STATS = [
 
 export default function Hero() {
   const ref = useRef(null);
+  const compact = useIsCompact();
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const yUp = useTransform(scrollYProgress, [0, 1], [0, -60]);
   const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
@@ -29,7 +31,9 @@ export default function Hero() {
         <div className="hero-glow hero-glow-1" />
         <div className="hero-glow hero-glow-2" />
         <div className="hero-grid" />
-        <ParticleField />
+        {/* Mouse-reactive WebGL particles — meaningless on touch (no cursor)
+            and a real battery/GPU cost, so skip mounting it on mobile. */}
+        {!compact && <ParticleField />}
       </div>
 
       <motion.div className="container hero-inner" style={{ y: yUp, opacity: fade }}>
