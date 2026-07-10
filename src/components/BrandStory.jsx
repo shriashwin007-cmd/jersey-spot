@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Parallax } from './anim';
 import { SHOP } from '../config';
 
 const reveal = {
@@ -35,36 +36,40 @@ export default function BrandStory() {
           </div>
         </motion.div>
 
-        <motion.div
-          className="story-panel"
-          initial={{ opacity: 0, scale: 0.94 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <div className="story-panel-glow" />
-          <div className="story-panel-inner">
-            {[
-              { k: 'In-house', v: 'Embroidery & Printing' },
-              { k: 'Every Sport', v: 'Football · Cricket · Basketball' },
-              { k: 'Real Stock', v: 'Footballs · Boots · Kits' },
-              { k: 'Fast', v: '48-hour Turnaround' },
-            ].map((it, i) => (
-              <motion.div
-                className="story-tile"
-                key={it.k}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 + i * 0.08, duration: 0.5 }}
-                whileHover={{ y: -6 }}
-              >
-                <div className="story-tile-k">{it.k}</div>
-                <div className="story-tile-v">{it.v}</div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        {/* Desktop-leaning parallax: the panel drifts vertically against the
+            copy column as you scroll (mobile kept gentle since it's stacked). */}
+        <Parallax className="story-panel-parallax" mobile={14} desktop={64}>
+          <motion.div
+            className="story-panel"
+            initial={{ opacity: 0, scale: 0.94 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="story-panel-glow" />
+            <div className="story-panel-inner">
+              {[
+                { k: 'In-house', v: 'Embroidery & Printing' },
+                { k: 'Every Sport', v: 'Football · Cricket · Basketball' },
+                { k: 'Real Stock', v: 'Footballs · Boots · Kits' },
+                { k: 'Fast', v: '48-hour Turnaround' },
+              ].map((it, i) => (
+                <motion.div
+                  className="story-tile"
+                  key={it.k}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 + i * 0.08, duration: 0.5 }}
+                  whileHover={{ y: -6 }}
+                >
+                  <div className="story-tile-k">{it.k}</div>
+                  <div className="story-tile-v">{it.v}</div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </Parallax>
       </div>
     </section>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useInView, useMotionValue, useSpring, useScroll, useTransform, animate } from 'framer-motion';
+import { useIsCompact } from '../hooks';
 
 /* Word-by-word reveal. Pass children as a string. Preserves markup via `parts`
    if you need coloured spans — here we keep it simple and split on spaces. */
@@ -91,6 +92,30 @@ export function ScrollPhoto({ children, className, direction = 'left', style }) 
   const opacity = useTransform(scrollYProgress, [0, 0.15, 0.82, 1], [0, 1, 1, 0]);
   return (
     <motion.div ref={ref} className={className} style={{ x, y, opacity, ...style }}>
+      {children}
+    </motion.div>
+  );
+}
+
+/* Scroll parallax: shifts a layer vertically as the page scrolls past it,
+   so it drifts at a different speed than the content around it (depth).
+   `mobile` / `desktop` are the total vertical travel in px across the
+   element's full pass through the viewport — tuned separately because the
+   same px travel reads much stronger on a short phone viewport than a tall
+   desktop one, and heavy parallax on mobile is disorienting. A spring
+   smooths the raw scroll value so it feels weighty, not twitchy. Only ever
+   drives `y` via `style` (never combined with rotate) — safe under Safari
+   WAAPI, same rule as the rest of this file. Respects reduced-motion. */
+export function Parallax({ children, className, mobile = 24, desktop = 80, style }) {
+  const ref = useRef(null);
+  const compact = useIsCompact();
+  const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const travel = reduce ? 0 : (compact ? mobile : desktop);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  const rawY = useTransform(scrollYProgress, [0, 1], [travel, -travel]);
+  const y = useSpring(rawY, { stiffness: 120, damping: 30, mass: 0.6 });
+  return (
+    <motion.div ref={ref} className={className} style={{ y, ...style }}>
       {children}
     </motion.div>
   );
