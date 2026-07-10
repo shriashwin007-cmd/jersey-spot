@@ -38,7 +38,7 @@ export default function BrandStory() {
 
         {/* Desktop-leaning parallax: the panel drifts vertically against the
             copy column as you scroll (mobile kept gentle since it's stacked). */}
-        <Parallax className="story-panel-parallax" mobile={14} desktop={64}>
+        <Parallax className="story-panel-parallax" mobile={30} desktop={140}>
           <motion.div
             className="story-panel"
             initial={{ opacity: 0, scale: 0.94 }}

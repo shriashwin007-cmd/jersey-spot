@@ -47,7 +47,7 @@
 .hero-bg { position: absolute; inset: 0; z-index: 0; }
 /* Real store photo, mobile-only — desktop keeps the particle field instead
    (see Hero.jsx). A dark scrim keeps the title/body text readable over it. */
-.hero-photo { display: none; position: absolute; top: -12%; left: 0; right: 0; height: 124%; background-size: cover; background-position: center 32%; will-change: transform; }
+.hero-photo { display: none; position: absolute; top: -25%; left: 0; right: 0; height: 150%; background-size: cover; background-position: center 32%; will-change: transform; }
 .hero-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.8) 55%, rgba(0,0,0,0.97) 100%); }
 .hero-glow { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5; }
 .hero-glow-1 { width: 620px; height: 620px; top: -180px; right: -120px; background: radial-gradient(circle, rgba(232,48,42,0.22), transparent 70%); }
@@ -281,6 +281,11 @@
    on the established opacity+y-only Reveal pattern used across this site,
    so nothing here ever asks Framer to hardware-accelerate rotate alongside
    other transform keys (the WAAPI crash this codebase avoids elsewhere). */
+/* Cards fly in from ±260px offscreen (ScrollPhoto), so clip the section
+   horizontally or they'd add a page-wide horizontal scrollbar. overflow-x:clip
+   leaves the y axis visible and doesn't establish a containing block, so the
+   position:fixed lightbox still escapes it. */
+.shopwall { overflow-x: clip; }
 .shopwall-head { text-align: center; max-width: 640px; margin: 0 auto 52px; }
 .shopwall-head .section-lead { margin-left: auto; margin-right: auto; }
 .shopwall-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 190px; gap: 20px; }

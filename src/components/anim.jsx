@@ -86,12 +86,21 @@ function useSpringMV() {
 export function ScrollPhoto({ children, className, direction = 'left', style }) {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const fromX = direction === 'left' ? -70 : 70;
-  const x = useTransform(scrollYProgress, [0, 0.3, 1], [fromX, 0, 0]);
-  const y = useTransform(scrollYProgress, [0, 0.25, 1], [70, 0, 0]);
-  const opacity = useTransform(scrollYProgress, [0, 0.15, 0.82, 1], [0, 1, 1, 0]);
+  // Deliberately BIG travel so the motion is unmistakable: each card flies in
+  // from far off to the side + up from well below, sits centred while it's in
+  // view, then flies back out the opposite way and fades — a full pass, not a
+  // tiny nudge. A spring gives it weight instead of rigidly tracking scroll.
+  const fromX = direction === 'left' ? -260 : 260;
+  const xRaw = useTransform(scrollYProgress, [0, 0.42, 0.62, 1], [fromX, 0, 0, -fromX * 0.55]);
+  const yRaw = useTransform(scrollYProgress, [0, 0.42, 0.62, 1], [160, 0, 0, -110]);
+  const scaleRaw = useTransform(scrollYProgress, [0, 0.42, 0.62, 1], [0.7, 1, 1, 0.86]);
+  const opacity = useTransform(scrollYProgress, [0, 0.22, 0.8, 1], [0, 1, 1, 0]);
+  const spring = { stiffness: 140, damping: 28, mass: 0.5 };
+  const x = useSpring(xRaw, spring);
+  const y = useSpring(yRaw, spring);
+  const scale = useSpring(scaleRaw, spring);
   return (
-    <motion.div ref={ref} className={className} style={{ x, y, opacity, ...style }}>
+    <motion.div ref={ref} className={className} style={{ x, y, scale, opacity, ...style }}>
       {children}
     </motion.div>
   );

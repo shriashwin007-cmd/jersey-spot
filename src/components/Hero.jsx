@@ -18,14 +18,16 @@ export default function Hero() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const yUp = useTransform(scrollYProgress, [0, 1], [0, -60]);
   const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-  // Mobile parallax: the photo backdrop drifts down as the page scrolls up,
-  // so it lags behind the foreground copy (yUp goes the other way) — the
-  // classic depth effect. Photo is over-sized in CSS so this never gaps.
-  const photoY = useTransform(scrollYProgress, [0, 1], [0, 90]);
-  // Desktop parallax: the two blurred glow orbs drift in opposite directions
-  // at different rates than the content, for ambient depth behind the copy.
-  const glow1Y = useTransform(scrollYProgress, [0, 1], [0, 160]);
-  const glow2Y = useTransform(scrollYProgress, [0, 1], [0, -120]);
+  // Mobile parallax: the photo backdrop drifts down hard AND zooms as the page
+  // scrolls up, lagging well behind the foreground copy (yUp goes the other
+  // way) — big, obvious depth. Photo is over-sized 150% in CSS so this never
+  // gaps even at the extreme.
+  const photoY = useTransform(scrollYProgress, [0, 1], [0, 200]);
+  const photoScale = useTransform(scrollYProgress, [0, 1], [1, 1.25]);
+  // Desktop parallax: the two blurred glow orbs drift far in opposite
+  // directions at different rates for strong ambient depth behind the copy.
+  const glow1Y = useTransform(scrollYProgress, [0, 1], [0, 320]);
+  const glow2Y = useTransform(scrollYProgress, [0, 1], [0, -260]);
 
   const fadeUp = (d = 0) => ({
     initial: { opacity: 0, y: 34 },
@@ -40,7 +42,7 @@ export default function Hero() {
         {/* Real store photo, mobile only (CSS-hidden on desktop, which keeps
             its particle field instead) — a bold photo backdrop reads much
             better on a phone than empty space above the fold. */}
-        <motion.div className="hero-photo" style={{ y: photoY, backgroundImage: `url(${cld('https://res.cloudinary.com/hwm5h6fh/image/upload/v1783697714/WhatsApp_Image_2026-07-10_at_1.57.12_PM_c6geip.jpg', 'f_auto,q_auto,w_900')})` }} />
+        <motion.div className="hero-photo" style={{ y: photoY, scale: photoScale, backgroundImage: `url(${cld('https://res.cloudinary.com/hwm5h6fh/image/upload/v1783697714/WhatsApp_Image_2026-07-10_at_1.57.12_PM_c6geip.jpg', 'f_auto,q_auto,w_900')})` }} />
         <motion.div className="hero-glow hero-glow-1" style={{ y: glow1Y }} />
         <motion.div className="hero-glow hero-glow-2" style={{ y: glow2Y }} />
         <div className="hero-grid" />
