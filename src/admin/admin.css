@@ -75,6 +75,30 @@ button.danger { background: rgba(224,90,77,0.15); border: 1px solid rgba(224,90,
 .admin-batch-item input { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text); font-size: 13px; }
 .admin-batch-item button { flex-shrink: 0; background: none; border: none; color: var(--text-muted); font-size: 14px; padding: 6px 10px; }
 .admin-batch-item button:hover { color: var(--danger); }
+.admin-blur-btn { font-size: 12px !important; font-weight: 600; padding: 6px 12px !important; border: 1px solid var(--border) !important; border-radius: 999px !important; white-space: nowrap; }
+.admin-blur-btn:hover { color: var(--gold) !important; border-color: var(--gold) !important; }
+.admin-blur-btn.has-spots { color: var(--gold) !important; border-color: var(--gold) !important; background: rgba(232,48,42,0.12) !important; }
+
+/* ── Blur-logos editor modal ── */
+.blur-modal { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.blur-modal-card { width: 100%; max-width: 520px; max-height: 92vh; overflow-y: auto; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+.blur-modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.blur-modal-head h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; color: var(--gold); margin: 0 0 4px; }
+.blur-modal-head p { font-size: 0.82rem; color: var(--text-muted); margin: 0; line-height: 1.4; }
+.blur-stage { position: relative; border-radius: 12px; overflow: hidden; background: #000; line-height: 0; touch-action: manipulation; }
+.blur-stage img { width: 100%; height: auto; display: block; cursor: crosshair; user-select: none; }
+.blur-spot {
+  position: absolute; width: 22%; aspect-ratio: 1; transform: translate(-50%, -50%);
+  border-radius: 50%; border: 2px solid var(--gold); background: rgba(232,48,42,0.22);
+  backdrop-filter: blur(3px); cursor: pointer; padding: 0;
+}
+.blur-spot::after { content: '✕'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #fff; font-size: 13px; font-weight: 700; opacity: 0; transition: opacity 0.15s; }
+.blur-spot:hover { border-style: dashed; }
+.blur-spot:hover::after { opacity: 1; }
+.blur-modal-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+.blur-count { font-size: 13px; color: var(--text-muted); }
+.blur-modal-actions > div { display: flex; gap: 10px; }
+.blur-save { background: linear-gradient(180deg, var(--gold-bright), var(--gold)); color: #1a1300; border: none; font-weight: 700; padding: 9px 20px; border-radius: 8px; font-size: 13px; cursor: pointer; }
 
 /* ── List ── */
 .admin-empty { color: var(--text-muted); font-size: 14px; padding: 20px 0; text-align: center; }

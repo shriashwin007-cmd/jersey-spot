@@ -37,6 +37,56 @@ async function uploadToCloudinary(file) {
   return data; // { secure_url, public_id, ... }
 }
 
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+// Bake soft, feathered blur spots into an image at the given normalized
+// (0–1) points and return a new JPEG File. Done fully client-side on a
+// canvas — the logo-blurred version is what gets uploaded, so the original
+// with visible brand marks never leaves the browser. Returns the original
+// file untouched when there are no spots.
+async function bakeBlurSpots(file, spots) {
+  if (!spots?.length) return file;
+  const img = await loadImage(URL.createObjectURL(file));
+  const w = img.naturalWidth, h = img.naturalHeight;
+  const short = Math.min(w, h);
+  const radius = Math.round(short * 0.11);   // spot size
+  const blurPx = Math.max(4, Math.round(short * 0.025)); // "slight" blur
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, w, h);
+
+  for (const s of spots) {
+    const cx = s.x * w, cy = s.y * h;
+    // Render a fully-blurred copy, then keep only a feathered circle of it
+    // via a radial-gradient alpha mask, and composite that onto the sharp base.
+    const t = document.createElement('canvas');
+    t.width = w; t.height = h;
+    const tc = t.getContext('2d');
+    tc.filter = `blur(${blurPx}px)`;
+    tc.drawImage(img, 0, 0, w, h);
+    tc.filter = 'none';
+    tc.globalCompositeOperation = 'destination-in';
+    const g = tc.createRadialGradient(cx, cy, radius * 0.5, cx, cy, radius);
+    g.addColorStop(0, 'rgba(0,0,0,1)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    tc.fillStyle = g;
+    tc.fillRect(0, 0, w, h);
+    ctx.drawImage(t, 0, 0);
+  }
+
+  const blob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.92));
+  return new File([blob], (file.name || 'jersey').replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+}
+
 function LoginGate({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -79,6 +129,58 @@ function LoginGate({ onLogin }) {
   );
 }
 
+// Tap-to-blur editor: shows the photo; tapping adds a soft blur spot at that
+// point, tapping an existing spot removes it. Coordinates are stored 0–1 so
+// they survive the later resize when baked onto the full-res image.
+function BlurEditor({ item, onSave, onClose }) {
+  const [spots, setSpots] = useState(item.blurSpots || []);
+  const imgRef = useRef(null);
+
+  const onImgClick = (e) => {
+    const r = imgRef.current.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width;
+    const y = (e.clientY - r.top) / r.height;
+    setSpots((prev) => [...prev, { x, y }]);
+  };
+  const removeSpot = (i, e) => { e.stopPropagation(); setSpots((prev) => prev.filter((_, idx) => idx !== i)); };
+
+  return (
+    <div className="blur-modal" onClick={onClose}>
+      <div className="blur-modal-card" onClick={(e) => e.stopPropagation()}>
+        <div className="blur-modal-head">
+          <div>
+            <h3>Blur logos</h3>
+            <p>Tap each logo (Nike swoosh, brand marks). Tap a spot again to remove it.</p>
+          </div>
+          <button type="button" className="ghost" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+
+        <div className="blur-stage">
+          <img ref={imgRef} src={item.preview} alt="" onClick={onImgClick} draggable={false} />
+          {spots.map((s, i) => (
+            <button
+              type="button"
+              key={i}
+              className="blur-spot"
+              style={{ left: `${s.x * 100}%`, top: `${s.y * 100}%` }}
+              onClick={(e) => removeSpot(i, e)}
+              aria-label={`Remove blur spot ${i + 1}`}
+            />
+          ))}
+        </div>
+
+        <div className="blur-modal-actions">
+          <span className="blur-count">{spots.length} spot{spots.length === 1 ? '' : 's'}</span>
+          <div>
+            <button type="button" className="ghost" onClick={() => setSpots([])} disabled={!spots.length}>Clear all</button>
+            <button type="button" className="blur-save" onClick={() => onSave(spots)}>Done</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Batch upload — drag in several photos at once. Tag/category/price/in-stock
 // are shared across the batch (they're normally the same for a fresh drop of
 // kits), but each photo gets its own required name field since those differ.
@@ -92,6 +194,7 @@ function UploadForm({ password, onAdded }) {
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  const [blurEditId, setBlurEditId] = useState(null);
   const inputRef = useRef(null);
 
   const addFiles = (fileList) => {
@@ -104,6 +207,7 @@ function UploadForm({ password, onAdded }) {
         file: f,
         preview: URL.createObjectURL(f),
         name: f.name.replace(/\.[^.]+$/, ''),
+        blurSpots: [],
       })),
     ]);
   };
@@ -111,6 +215,7 @@ function UploadForm({ password, onAdded }) {
   const onDrop = (e) => { e.preventDefault(); setDragOver(false); addFiles(e.dataTransfer.files); };
   const removeItem = (id) => setItems((prev) => prev.filter((it) => it.id !== id));
   const renameItem = (id, name) => setItems((prev) => prev.map((it) => (it.id === id ? { ...it, name } : it)));
+  const setBlurSpots = (id, spots) => setItems((prev) => prev.map((it) => (it.id === id ? { ...it, blurSpots: spots } : it)));
 
   const reset = () => {
     setItems([]); setTag(''); setPrice('');
@@ -125,7 +230,8 @@ function UploadForm({ password, onAdded }) {
     setUploading(true);
     try {
       for (const it of items) {
-        const uploaded = await uploadToCloudinary(it.file);
+        const fileToUpload = await bakeBlurSpots(it.file, it.blurSpots);
+        const uploaded = await uploadToCloudinary(fileToUpload);
         const { product } = await api('/api/products', {
           method: 'POST',
           password,
@@ -172,6 +278,14 @@ function UploadForm({ password, onAdded }) {
             <div className="admin-batch-item" key={it.id}>
               <img src={it.preview} alt="" />
               <input value={it.name} onChange={(e) => renameItem(it.id, e.target.value)} placeholder="Name" />
+              <button
+                type="button"
+                className={`ghost admin-blur-btn${it.blurSpots.length ? ' has-spots' : ''}`}
+                onClick={() => setBlurEditId(it.id)}
+                title="Blur brand logos"
+              >
+                Blur{it.blurSpots.length ? ` (${it.blurSpots.length})` : ''}
+              </button>
               <button type="button" className="ghost" onClick={() => removeItem(it.id)}>✕</button>
             </div>
           ))}
@@ -212,6 +326,14 @@ function UploadForm({ password, onAdded }) {
           ? `Uploading ${items.length} photo${items.length > 1 ? 's' : ''}…`
           : `Upload & Add${items.length ? ` (${items.length})` : ''}`}
       </button>
+
+      {blurEditId && (
+        <BlurEditor
+          item={items.find((it) => it.id === blurEditId)}
+          onSave={(spots) => { setBlurSpots(blurEditId, spots); setBlurEditId(null); }}
+          onClose={() => setBlurEditId(null)}
+        />
+      )}
     </form>
   );
 }
