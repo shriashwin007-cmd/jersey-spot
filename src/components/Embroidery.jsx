@@ -10,7 +10,6 @@ const PRINTED_PHOTO = 'https://res.cloudinary.com/hwm5h6fh/image/upload/v1784019
 const MODES = {
   embroidered: {
     label: 'Embroidered',
-    price: 'from ₹1,499',
     points: [
       'Names, numbers & crests stitched thread-by-thread',
       'Raised, textured, premium pro-club feel',
@@ -21,7 +20,6 @@ const MODES = {
   },
   printed: {
     label: 'Printed',
-    price: 'from ₹899',
     points: [
       'Full-colour sublimation & heat-press printing',
       'Feather-light with a smooth flat finish',
@@ -85,7 +83,6 @@ export default function Embroidery() {
           </AnimatePresence>
 
           <div className="emb-cta">
-            <div className="emb-price">{m.price}</div>
             <a href={waLink(m.msg)} target="_blank" rel="noreferrer" className="btn btn-gold hoverable">Order {m.label} →</a>
           </div>
         </motion.div>

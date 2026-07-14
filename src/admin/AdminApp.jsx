@@ -253,7 +253,15 @@ function BlurEditor({ item, onSave, onClose }) {
           <span className="blur-count">{spots.length} blur{spots.length === 1 ? '' : 's'}</span>
           <div>
             <button type="button" className="ghost" onClick={() => { setSpots([]); setSelected(null); }} disabled={!spots.length}>Clear all</button>
-            <button type="button" className="blur-save" onClick={() => onSave(spots)}>Done</button>
+            <button
+              type="button"
+              className="blur-save"
+              disabled={!spots.length}
+              title={spots.length ? '' : 'Tap the logo on the photo first to add a blur spot'}
+              onClick={() => onSave(spots)}
+            >
+              Done
+            </button>
           </div>
         </div>
       </div>
@@ -442,6 +450,7 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
         body: JSON.stringify({ imageUrl: uploaded.secure_url, cloudinaryPublicId: uploaded.public_id }),
       });
       onUpdated(product);
+      alert('Logo blurred — the catalogue image is updated.');
     } catch (err) {
       alert(err.message);
     } finally {
