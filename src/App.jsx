@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Marquee from './components/Marquee';
 import StatsBand from './components/StatsBand';
+import ScrollVideo from './components/ScrollVideo';
 import BrandStory from './components/BrandStory';
 import ShopWall from './components/ShopWall';
 import Gallery from './components/Gallery';
@@ -64,6 +65,7 @@ export default function App() {
         <Hero />
         <Marquee />
         <StatsBand />
+        <ScrollVideo />
         <BrandStory />
         <ShopWall />
         <Gallery />
