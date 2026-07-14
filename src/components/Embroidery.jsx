@@ -98,8 +98,8 @@ export default function Embroidery() {
           <div className="emb-preview-ring" />
           <CompareSlider
             className="emb-compare hoverable"
-            before={<img src={cld(EMBROIDERED_PHOTO, 'f_auto,q_auto,w_920')} alt="Embroidered finish" />}
-            after={<img src={cld(PRINTED_PHOTO, 'f_auto,q_auto,w_920')} alt="Sublimation printed finish" />}
+            before={<img src={cld(PRINTED_PHOTO, 'f_auto,q_auto,w_920')} alt="Sublimation printed finish" />}
+            after={<img src={cld(EMBROIDERED_PHOTO, 'f_auto,q_auto,w_920')} alt="Embroidered finish" />}
             leftLabel="Embroidered"
             rightLabel="Printed"
           />
