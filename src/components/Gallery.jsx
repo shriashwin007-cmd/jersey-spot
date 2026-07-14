@@ -19,8 +19,6 @@ const FALLBACK_KITS = [
 
 const FILTERS = [{ value: 'all', label: 'All' }, ...CATEGORIES.map((c) => ({ value: c.value, label: c.label }))];
 
-const DEEP_LINK_EVENT = 'jersey:filter-category';
-
 export default function Gallery() {
   const [kits, setKits] = useState(FALLBACK_KITS);
   const [filter, setFilter] = useState('all');
@@ -37,15 +35,6 @@ export default function Gallery() {
     }
     window.open(waLink(item.msg), '_blank', 'noopener');
   };
-
-  useEffect(() => {
-    // Gallery mounts once on initial page load — a plain "read sessionStorage
-    // on mount" check would never fire for a click that happens later on the
-    // same page. Listen for the live event WhatWeSell dispatches instead.
-    const onDeepLink = (e) => setFilter(e.detail);
-    window.addEventListener(DEEP_LINK_EVENT, onDeepLink);
-    return () => window.removeEventListener(DEEP_LINK_EVENT, onDeepLink);
-  }, []);
 
   useEffect(() => {
     let cancelled = false;

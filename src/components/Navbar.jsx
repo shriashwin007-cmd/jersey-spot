@@ -7,7 +7,6 @@ import { useCart } from '../cart';
 const LINKS = [
   { href: '#kits', label: 'Catalogue' },
   { href: '#story', label: 'Story' },
-  { href: '#shop', label: 'What We Sell' },
   { href: '#embroidery', label: 'Embroidery' },
   { href: '#why', label: 'Why Us' },
   { href: '#contact', label: 'Visit' },

@@ -16,7 +16,7 @@ export default function Footer() {
         <div className="footer-col">
           <h4>Explore</h4>
           <a href="#story" className="hoverable">Our Story</a>
-          <a href="#shop" className="hoverable">What We Sell</a>
+          <a href="#kits" className="hoverable">Catalogue</a>
           <a href="#embroidery" className="hoverable">Embroidery</a>
           <a href="#why" className="hoverable">Why Us</a>
         </div>
