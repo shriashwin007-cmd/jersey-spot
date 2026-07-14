@@ -455,6 +455,8 @@
 .pm-actions { display: flex; flex-direction: column; gap: 12px; margin-top: auto; padding-top: 26px; }
 .pm-btn { width: 100%; justify-content: center; }
 .pm-added { background: linear-gradient(180deg, #2fbf6b, #1e9e54) !important; color: #fff !important; }
+.pm-order-form { display: flex; flex-direction: column; gap: 14px; }
+.pm-order-title { font-family: var(--font-display); font-size: 1.1rem; color: var(--text); margin: 4px 0 0; }
 @media (max-width: 720px) {
   .pm-card { grid-template-columns: 1fr; max-height: 92vh; overflow-y: auto; }
   .pm-media { min-height: 0; max-height: 46vh; }
