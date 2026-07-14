@@ -163,7 +163,16 @@
 .compare-layer { position: absolute; inset: 0; }
 .compare-layer svg { display: block; }
 .compare-layer img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.compare-badge { position: absolute; top: 10px; max-width: 46%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-bright); background: rgba(0,0,0,0.72); border: 1px solid var(--gold-line); padding: 5px 10px; border-radius: var(--r-pill); transition: opacity 0.2s; pointer-events: none; }
+.compare-badge {
+  position: absolute; top: 10px; max-width: 46%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #fff;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.28);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.35);
+  padding: 5px 10px; border-radius: var(--r-pill); transition: opacity 0.2s; pointer-events: none;
+}
 .compare-badge-l { left: 10px; }
 .compare-badge-r { right: 10px; }
 /* Drag only starts from the handle now (not anywhere on the image), so the
@@ -175,11 +184,52 @@
   display: flex; align-items: center; justify-content: center;
   cursor: ew-resize; touch-action: none;
 }
+/* Liquid-glass divider: a frosted, refractive strip instead of a flat line —
+   blurs/brightens whatever's directly behind it and picks up a soft red glow
+   from the brand color, like the drag rail is made of glass. */
 .compare-handle::before {
-  content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px;
-  background: var(--gold); transform: translateX(-50%); opacity: 0.85;
+  content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 3px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.2) 45%, rgba(232,48,42,0.65));
+  backdrop-filter: blur(6px) saturate(160%);
+  -webkit-backdrop-filter: blur(6px) saturate(160%);
+  transform: translateX(-50%);
+  box-shadow: 0 0 16px rgba(232,48,42,0.55);
+  opacity: 0.92;
+  transition: box-shadow 0.25s, opacity 0.25s;
 }
-.compare-handle-grip { position: relative; z-index: 1; width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(180deg, var(--gold-bright), var(--gold)); color: #1a1300; display: grid; place-items: center; box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+.compare-handle:hover::before,
+.compare-handle:active::before { box-shadow: 0 0 26px rgba(232,48,42,0.8); opacity: 1; }
+
+/* Liquid-glass grip: translucent frosted disc with a specular highlight and
+   an inner red rim-light, so it reads as glass sitting on top of the photo
+   rather than a flat painted button. */
+.compare-handle-grip {
+  position: relative; z-index: 1; width: 42px; height: 42px; border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.06) 55%, rgba(232,48,42,0.28));
+  backdrop-filter: blur(16px) saturate(200%);
+  -webkit-backdrop-filter: blur(16px) saturate(200%);
+  border: 1px solid rgba(255,255,255,0.45);
+  color: #fff;
+  display: grid; place-items: center; overflow: hidden;
+  box-shadow:
+    0 10px 26px rgba(0,0,0,0.45),
+    inset 0 1px 1px rgba(255,255,255,0.65),
+    inset 0 -8px 12px rgba(232,48,42,0.3);
+  transition: transform 0.3s cubic-bezier(0.2,0.9,0.3,1.4), box-shadow 0.3s;
+}
+.compare-handle-grip::before {
+  content: ''; position: absolute; inset: 1px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 30% 22%, rgba(255,255,255,0.75), rgba(255,255,255,0) 55%);
+}
+.compare-handle:hover .compare-handle-grip,
+.compare-handle:active .compare-handle-grip,
+.compare-handle:focus-visible .compare-handle-grip {
+  transform: scale(1.14);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.5),
+    inset 0 1px 1px rgba(255,255,255,0.8),
+    inset 0 -10px 16px rgba(232,48,42,0.42);
+}
 
 /* ── Why Us ───────────────────────────────────────────── */
 .why-head { text-align: center; margin-bottom: 52px; }
