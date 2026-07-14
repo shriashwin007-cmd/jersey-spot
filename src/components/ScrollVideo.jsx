@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useMotionValueEvent, useScroll } from 'framer-motion';
+import { motion, useMotionValueEvent, useScroll, useTransform } from 'framer-motion';
 import { useIsCompact } from '../hooks';
 
 // Frames were extracted from the source clip with ffmpeg at 30fps
@@ -10,21 +10,65 @@ const FRAME_COUNT = 151;
 const BASE = 'https://res.cloudinary.com/hwm5h6fh/image/upload';
 const frameUrl = (i, width) => `${BASE}/f_auto,q_auto,w_${width}/jersey-catalog/scrollvid/frame_${String(i).padStart(4, '0')}.jpg`;
 
+const LINES = [
+  { big: 'EPIC', small: 'FOOTBALL', range: [0, 0.06, 0.24, 0.31] },
+  { big: 'EVERY SPRINT.', small: 'EVERY GOAL.', range: [0.35, 0.41, 0.59, 0.66] },
+  { big: 'WEAR YOUR', small: 'PRIDE.', range: [0.7, 0.76, 0.94, 1] },
+];
+
+// One phrase, flipped into view in 3D (rotateX + depth) and flipped back out
+// as the scroll passes its window — a slide-deck that lives entirely on the
+// scrollbar instead of a timer.
+function TextSlide({ scrollYProgress, range, big, small }) {
+  const [s0, s1, e1, e0] = range;
+  const rotateX = useTransform(scrollYProgress, [s0, s1, e1, e0], [78, 0, 0, -78]);
+  const opacity = useTransform(scrollYProgress, [s0, s1, e1, e0], [0, 1, 1, 0]);
+  const z = useTransform(scrollYProgress, [s0, s1, e1, e0], [-260, 0, 0, -260]);
+  const y = useTransform(scrollYProgress, [s0, s1, e1, e0], [70, 0, 0, -70]);
+  return (
+    <motion.div className="scrollvid-line" style={{ rotateX, opacity, z, y }}>
+      <span className="scrollvid-line-big">{big}</span>
+      <span className="scrollvid-line-small">{small}</span>
+    </motion.div>
+  );
+}
+
 export default function ScrollVideo() {
   const wrapRef = useRef(null);
   const canvasRef = useRef(null);
-  const images = useRef(new Array(FRAME_COUNT + 1).fill(null));
+  const images = useRef(new Array(FRAME_COUNT + 2).fill(null));
   const currentFrame = useRef(1);
   const [ready, setReady] = useState(0); // frames loaded so far, drives the progress hint
   const compact = useIsCompact();
   const width = compact ? 640 : 1080;
 
   const { scrollYProgress } = useScroll({ target: wrapRef, offset: ['start start', 'end end'] });
+  const canvasScale = useTransform(scrollYProgress, [0, 1], [1, 1.07]);
 
-  const draw = useCallback((idx) => {
+  const drawCover = useCallback((ctx, img, w, h, alpha) => {
+    const scale = Math.max(w / img.width, h / img.height);
+    const dw = img.width * scale, dh = img.height * scale;
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+    ctx.globalAlpha = 1;
+  }, []);
+
+  // Draws a fractional frame position by crossfading the two nearest loaded
+  // frames — with only 151 stills spread across a much longer scroll now,
+  // a hard frame-snap would look stepped, so this dissolves between them for
+  // a genuinely smooth scrub instead of a slideshow.
+  const draw = useCallback((floatIdx) => {
     const canvas = canvasRef.current;
-    const img = images.current[idx];
-    if (!canvas || !img) return;
+    if (!canvas) return;
+    const clamped = Math.min(FRAME_COUNT, Math.max(1, floatIdx));
+    let lo = Math.floor(clamped);
+    const frac = clamped - lo;
+    let hi = Math.min(FRAME_COUNT, lo + 1);
+    while (lo > 1 && !images.current[lo]) lo--; // hold last-known-good while preload catches up
+    if (!images.current[hi]) hi = lo;
+
+    const loImg = images.current[lo];
+    if (!loImg) return;
     const ctx = canvas.getContext('2d');
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -33,11 +77,11 @@ export default function ScrollVideo() {
       canvas.height = h * dpr;
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const scale = Math.max(w / img.width, h / img.height);
-    const dw = img.width * scale, dh = img.height * scale;
     ctx.clearRect(0, 0, w, h);
-    ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
-  }, []);
+    drawCover(ctx, loImg, w, h, 1);
+    const hiImg = images.current[hi];
+    if (hiImg && hi !== lo && frac > 0.01) drawCover(ctx, hiImg, w, h, frac);
+  }, [drawCover]);
 
   // Preload the sequence with 6 loaders running at once, each chaining to the
   // next frame as it finishes — fast enough to get moving immediately without
@@ -56,7 +100,7 @@ export default function ScrollVideo() {
         images.current[idx] = img;
         loadedCount++;
         setReady(loadedCount);
-        if (idx === currentFrame.current) draw(idx);
+        if (Math.abs(idx - currentFrame.current) < 1.5) draw(currentFrame.current);
         loadNext();
       };
       img.onerror = loadNext;
@@ -68,11 +112,9 @@ export default function ScrollVideo() {
   }, [width, draw]);
 
   useMotionValueEvent(scrollYProgress, 'change', (p) => {
-    const target = Math.min(FRAME_COUNT, Math.max(1, Math.round(p * (FRAME_COUNT - 1)) + 1));
-    currentFrame.current = target;
-    let idx = target;
-    while (idx > 1 && !images.current[idx]) idx--; // hold last-known-good frame while scrubbing ahead of preload
-    if (images.current[idx]) draw(idx);
+    const floatIdx = 1 + p * (FRAME_COUNT - 1);
+    currentFrame.current = floatIdx;
+    draw(floatIdx);
   });
 
   useEffect(() => {
@@ -86,8 +128,15 @@ export default function ScrollVideo() {
   return (
     <section className="scrollvid-wrap" ref={wrapRef} aria-hidden>
       <div className="scrollvid-sticky">
-        <canvas ref={canvasRef} className="scrollvid-canvas" />
+        <motion.canvas ref={canvasRef} className="scrollvid-canvas" style={{ scale: canvasScale }} />
         <div className="scrollvid-vignette" />
+
+        <div className="scrollvid-textstage">
+          {LINES.map((l) => (
+            <TextSlide key={l.big} scrollYProgress={scrollYProgress} range={l.range} big={l.big} small={l.small} />
+          ))}
+        </div>
+
         {pct < 100 && (
           <div className="scrollvid-loadbar"><span style={{ width: `${pct}%` }} /></div>
         )}

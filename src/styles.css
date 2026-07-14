@@ -260,9 +260,12 @@
 }
 
 /* ── ScrollVideo (sticky, scroll-scrubbed frame sequence) ── */
-.scrollvid-wrap { position: relative; height: 450vh; }
+/* Wrapper height controls playback speed relative to scroll distance — 40%
+   taller than the original 450vh/320vh so the same 151 frames stretch over
+   more scroll and read as slower, smoother motion. */
+.scrollvid-wrap { position: relative; height: 630vh; }
 .scrollvid-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; background: #000; }
-.scrollvid-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.scrollvid-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; transform-origin: center center; }
 .scrollvid-vignette {
   position: absolute; inset: 0; pointer-events: none;
   background:
@@ -271,7 +274,27 @@
 }
 .scrollvid-loadbar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255,255,255,0.12); }
 .scrollvid-loadbar span { display: block; height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-bright)); transition: width 0.15s linear; }
-@media (max-width: 720px) { .scrollvid-wrap { height: 320vh; } }
+
+/* 3D text stage — each phrase flips in on the X axis with real depth (z),
+   so it reads as a physical card rotating into place rather than a fade. */
+.scrollvid-textstage {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  perspective: 1200px; pointer-events: none; z-index: 2;
+}
+.scrollvid-line {
+  position: absolute; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  text-align: center; transform-style: preserve-3d; will-change: transform, opacity;
+  text-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+.scrollvid-line-big {
+  font-family: var(--font-display); font-weight: 800; color: #fff;
+  font-size: clamp(2.6rem, 7vw, 5.5rem); line-height: 1; letter-spacing: -0.01em;
+}
+.scrollvid-line-small {
+  font-family: var(--font-display); font-weight: 800; color: var(--gold-bright);
+  font-size: clamp(1.8rem, 5vw, 3.6rem); line-height: 1;
+}
+@media (max-width: 720px) { .scrollvid-wrap { height: 448vh; } }
 
 /* ── Why Us ───────────────────────────────────────────── */
 .why-head { text-align: center; margin-bottom: 52px; }
