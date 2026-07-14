@@ -132,6 +132,7 @@
 .sell-card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
 .sell-card-price { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; color: var(--gold-bright); }
 .sell-card-price span { font-family: var(--font-body); font-size: 0.7rem; color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.1em; margin-right: 4px; }
+.sell-card-price-ask { font-size: 1rem; font-weight: 600; color: var(--text-muted); }
 .sell-card-btn { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text); background: rgba(255,255,255,0.05); border: 1px solid var(--border-strong); padding: 8px 14px; border-radius: var(--r-pill); cursor: pointer; transition: background 0.2s, border-color 0.2s, color 0.2s; }
 .sell-card-btn:hover { color: var(--gold-bright); border-color: var(--gold-line); background: var(--gold-soft); }
 @media (max-width: 1040px) { .sell-grid { grid-template-columns: repeat(2, 1fr); } }

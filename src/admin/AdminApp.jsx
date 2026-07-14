@@ -1,14 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from './cloudinaryConfig';
+import { CATEGORIES, categoryLabel } from '../categories';
 
 const PASSWORD_KEY = 'jersey_admin_pw';
-
-const CATEGORIES = [
-  { value: 'embroidered', label: 'Embroidered Jersey' },
-  { value: 'printed', label: 'Printed Jersey' },
-  { value: 'football', label: 'Football' },
-  { value: 'boots', label: 'Boots' },
-];
 
 async function api(path, { password, ...opts } = {}) {
   const res = await fetch(path, {
@@ -533,7 +527,7 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
             {!p.in_stock && <span className="admin-badge-soldout">Sold Out</span>}
             {p.buy_online && <span className="admin-badge-buyonline">Buy Online</span>}
           </div>
-          <div className="admin-row-meta">{p.category} · {p.tag || '—'} · ₹{p.price}{p.enquiry_clicks > 0 ? ` · ${p.enquiry_clicks} enquiries` : ''}</div>
+          <div className="admin-row-meta">{categoryLabel(p.category)} · {p.tag || '—'} · ₹{p.price}{p.enquiry_clicks > 0 ? ` · ${p.enquiry_clicks} enquiries` : ''}</div>
         </div>
       )}
       <div className="admin-row-actions">

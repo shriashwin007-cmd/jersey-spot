@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { CATEGORIES } from '../categories';
 import { SHOP, waLink } from '../config';
 
 export default function Contact() {
-  const [form, setForm] = useState({ name: '', product: 'Embroidered Jersey', qty: '1', details: '' });
+  const [form, setForm] = useState({ name: '', product: CATEGORIES[0].label, qty: '1', details: '' });
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const message =
@@ -75,10 +76,7 @@ export default function Contact() {
             <label className="field">
               <span>Product</span>
               <select value={form.product} onChange={set('product')} className="hoverable">
-                <option>Embroidered Jersey</option>
-                <option>Non-Embroidered Jersey</option>
-                <option>Football</option>
-                <option>Football Boots</option>
+                {CATEGORIES.map((c) => <option key={c.value}>{c.label}</option>)}
                 <option>Team / Bulk Order</option>
               </select>
             </label>

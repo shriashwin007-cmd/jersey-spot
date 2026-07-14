@@ -1,4 +1,5 @@
 import logo from '../assets/logo.png';
+import { CATEGORIES } from '../categories';
 import { SHOP, waLink } from '../config';
 
 export default function Footer() {
@@ -22,10 +23,17 @@ export default function Footer() {
 
         <div className="footer-col">
           <h4>Shop</h4>
-          <a href={waLink('Hi! I want an embroidered jersey.')} target="_blank" rel="noreferrer" className="hoverable">Embroidered Jerseys</a>
-          <a href={waLink('Hi! I want a printed jersey.')} target="_blank" rel="noreferrer" className="hoverable">Printed Jerseys</a>
-          <a href={waLink('Hi! I want a football.')} target="_blank" rel="noreferrer" className="hoverable">Footballs</a>
-          <a href={waLink('Hi! I want football boots.')} target="_blank" rel="noreferrer" className="hoverable">Boots</a>
+          {CATEGORIES.map((c) => (
+            <a
+              key={c.value}
+              href={waLink(`Hi Jersey Spot! I want to order — ${c.label}.`)}
+              target="_blank"
+              rel="noreferrer"
+              className="hoverable"
+            >
+              {c.label}
+            </a>
+          ))}
         </div>
 
         <div className="footer-col">

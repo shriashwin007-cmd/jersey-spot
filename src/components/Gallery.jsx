@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import DomeSlider from './DomeSlider';
 import ProductModal from './ProductModal';
 import { useCart } from '../cart';
+import { CATEGORIES } from '../categories';
 import { SHOP, waLink } from '../config';
 
 // Static fallback — shown until the admin catalog has real entries, or if
@@ -16,13 +17,7 @@ const FALLBACK_KITS = [
   { img: '/shop/shop-6.jpg', name: 'Real Madrid', tag: 'Retro Blue', category: 'embroidered', msg: 'Hi! I want the Real Madrid retro blue jersey.' },
 ];
 
-const FILTERS = [
-  { value: 'all', label: 'All' },
-  { value: 'embroidered', label: 'Embroidered' },
-  { value: 'printed', label: 'Printed' },
-  { value: 'football', label: 'Football' },
-  { value: 'boots', label: 'Boots' },
-];
+const FILTERS = [{ value: 'all', label: 'All' }, ...CATEGORIES.map((c) => ({ value: c.value, label: c.label }))];
 
 const DEEP_LINK_EVENT = 'jersey:filter-category';
 
