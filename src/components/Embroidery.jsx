@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CompareSlider from './CompareSlider';
+import { cld } from '../cloudinary';
 import { waLink } from '../config';
+
+const EMBROIDERED_PHOTO = 'https://res.cloudinary.com/hwm5h6fh/image/upload/v1784019861/embroy_version_xicda2.png';
+const PRINTED_PHOTO = 'https://res.cloudinary.com/hwm5h6fh/image/upload/v1784019861/sublimation_version_ohd5iq.png';
 
 const MODES = {
   embroidered: {
@@ -27,40 +31,6 @@ const MODES = {
     msg: 'Hi Jersey Spot! Tell me more about PRINTED jerseys.',
   },
 };
-
-function JerseyBase({ children }) {
-  return (
-    <svg viewBox="0 0 200 220" width="100%" height="100%">
-      <defs>
-        <linearGradient id="embFab" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1a1a1d" />
-          <stop offset="100%" stopColor="#0a0a0b" />
-        </linearGradient>
-      </defs>
-      <path d="M70 26 L48 38 L26 70 L46 88 L60 76 V196 H140 V76 L154 88 L174 70 L152 38 L130 26 Q100 46 70 26Z" fill="url(#embFab)" stroke="#e8302a" strokeWidth="2" />
-      <path d="M80 30 Q100 44 120 30" fill="none" stroke="#e8302a" strokeWidth="2" />
-      {children}
-    </svg>
-  );
-}
-
-function EmbroideredJersey() {
-  return (
-    <JerseyBase>
-      <circle cx="100" cy="103" r="40" fill="none" stroke="#e8302a" strokeWidth="1.4" strokeDasharray="4 5" opacity="0.55" />
-      <text x="100" y="120" fontSize="52" fontWeight="800" fontFamily="Inter, sans-serif" fill="#e8302a" stroke="#a4161a" strokeWidth="1.2" textAnchor="middle">10</text>
-      <text x="100" y="164" fontSize="16" fontWeight="700" letterSpacing="3" fontFamily="Inter, sans-serif" fill="#e8302a" textAnchor="middle">CHENNAI</text>
-    </JerseyBase>
-  );
-}
-function PrintedJersey() {
-  return (
-    <JerseyBase>
-      <text x="100" y="120" fontSize="52" fontWeight="800" fontFamily="Inter, sans-serif" fill="#dfe3ea" textAnchor="middle">10</text>
-      <text x="100" y="164" fontSize="16" fontWeight="700" letterSpacing="3" fontFamily="Inter, sans-serif" fill="#dfe3ea" textAnchor="middle">CHENNAI</text>
-    </JerseyBase>
-  );
-}
 
 export default function Embroidery() {
   const [mode, setMode] = useState('embroidered');
@@ -131,8 +101,8 @@ export default function Embroidery() {
           <div className="emb-preview-ring" />
           <CompareSlider
             className="emb-compare hoverable"
-            before={<EmbroideredJersey />}
-            after={<PrintedJersey />}
+            before={<img src={cld(EMBROIDERED_PHOTO, 'f_auto,q_auto,w_920')} alt="Embroidered finish" />}
+            after={<img src={cld(PRINTED_PHOTO, 'f_auto,q_auto,w_920')} alt="Sublimation printed finish" />}
             leftLabel="Embroidered"
             rightLabel="Printed"
           />
