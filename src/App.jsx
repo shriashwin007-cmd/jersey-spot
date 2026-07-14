@@ -63,9 +63,9 @@ export default function App() {
 
       <main id="main">
         <Hero />
+        <ScrollVideo />
         <Marquee />
         <StatsBand />
-        <ScrollVideo />
         <BrandStory />
         <ShopWall />
         <Gallery />
