@@ -90,6 +90,14 @@
   .hero-photo { display: block; }
   .hero-grid { display: none; }
 }
+@media (max-width: 720px) {
+  .hero { padding: calc(var(--nav-h) + 24px) 0 48px; }
+  .hero-copy { max-width: none; text-align: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-cta { justify-content: center; }
+  .hero-stats { justify-content: center; text-align: center; }
+  .hero-scroll { bottom: 14px; }
+}
 
 /* ── Marquee ──────────────────────────────────────────── */
 .marquee { overflow: hidden; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg-elev); padding: 20px 0; }

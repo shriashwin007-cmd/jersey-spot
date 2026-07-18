@@ -16,14 +16,17 @@ export default function Hero() {
   const ref = useRef(null);
   const compact = useIsCompact();
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
-  const yUp = useTransform(scrollYProgress, [0, 1], [0, -60]);
-  const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-  // Mobile parallax: the photo backdrop drifts down hard AND zooms as the page
-  // scrolls up, lagging well behind the foreground copy (yUp goes the other
-  // way) — big, obvious depth. Photo is over-sized 150% in CSS so this never
-  // gaps even at the extreme.
-  const photoY = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const photoScale = useTransform(scrollYProgress, [0, 1], [1, 1.25]);
+  // Mobile finishes its whole scroll-out over a much shorter drag than desktop
+  // (0.35 of the section vs 1.0) — the copy and photo clear the fold quickly
+  // instead of visibly lagging behind the user's thumb.
+  const yUp = useTransform(scrollYProgress, compact ? [0, 0.35] : [0, 1], [0, -60]);
+  const fade = useTransform(scrollYProgress, compact ? [0, 0.3] : [0, 0.8], [1, 0]);
+  // Mobile parallax: the photo backdrop drifts down and zooms as the page
+  // scrolls up, lagging behind the foreground copy for depth. Kept short and
+  // subtle on mobile so it reads as a quick, deliberate shift rather than a
+  // slow drawn-out drift. Photo is over-sized 150% in CSS so this never gaps.
+  const photoY = useTransform(scrollYProgress, compact ? [0, 0.4] : [0, 1], compact ? [0, 90] : [0, 200]);
+  const photoScale = useTransform(scrollYProgress, compact ? [0, 0.4] : [0, 1], compact ? [1, 1.12] : [1, 1.25]);
   // Desktop parallax: the two blurred glow orbs drift in opposite directions
   // for ambient depth. Kept modest — they're blur(90px), so a big move is
   // imperceptible but forces more of the layer to repaint.
