@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import CompareSlider from './CompareSlider';
 import { cld } from '../cloudinary';
 import { waLink } from '../config';
+import { Button } from './ui/button';
 
 const EMBROIDERED_PHOTO = 'https://res.cloudinary.com/hwm5h6fh/image/upload/v1784019861/embroy_version_xicda2.png';
 const PRINTED_PHOTO = 'https://res.cloudinary.com/hwm5h6fh/image/upload/v1784019861/sublimation_version_ohd5iq.png';
@@ -82,7 +83,9 @@ export default function Embroidery() {
           </AnimatePresence>
 
           <div className="emb-cta">
-            <a href={waLink(m.msg)} target="_blank" rel="noreferrer" className="btn btn-gold hoverable">Order {m.label} →</a>
+            <Button asChild variant="gold" className="hoverable">
+              <a href={waLink(m.msg)} target="_blank" rel="noreferrer">Order {m.label} →</a>
+            </Button>
           </div>
         </motion.div>
 

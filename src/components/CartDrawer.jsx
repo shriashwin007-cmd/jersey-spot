@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../cart';
 import { loadRazorpayScript } from '../razorpayLoader';
+import { Button } from './ui/button';
 
 const SHIPPING_FEE = 79;
 
@@ -35,9 +36,9 @@ function CartStep({ items, updateQty, removeItem, subtotal, onCheckout }) {
         ))}
       </div>
       <div className="cart-summary-row"><span>Subtotal</span><span>₹{subtotal}</span></div>
-      <button type="button" className="btn btn-gold cart-checkout-btn" onClick={onCheckout}>
+      <Button variant="gold" className="cart-checkout-btn" onClick={onCheckout}>
         Checkout →
-      </button>
+      </Button>
     </>
   );
 }
@@ -142,9 +143,9 @@ function AddressStep({ subtotal, onBack, onPaid }) {
 
       {error && <div className="admin-error">{error}</div>}
 
-      <button type="submit" className="btn btn-gold cart-checkout-btn" disabled={busy}>
+      <Button type="submit" variant="gold" className="cart-checkout-btn" disabled={busy}>
         {busy ? 'Processing…' : `Pay ₹${total}`}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -155,7 +156,7 @@ function SuccessStep({ orderId, onClose }) {
       <div className="cart-success-icon">✓</div>
       <h3>Order placed!</h3>
       <p>Order #{orderId} is confirmed. We'll reach out on your phone number to confirm delivery details.</p>
-      <button type="button" className="btn btn-gold" onClick={onClose}>Continue Shopping</button>
+      <Button variant="gold" onClick={onClose}>Continue Shopping</Button>
     </div>
   );
 }
