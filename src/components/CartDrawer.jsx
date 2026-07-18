@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../cart';
 import { loadRazorpayScript } from '../razorpayLoader';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { Sheet, SheetContent, SheetTitle } from './ui/sheet';
 
 const SHIPPING_FEE = 79;
 
@@ -174,36 +174,30 @@ export default function CartDrawer() {
   };
 
   return (
-    <AnimatePresence>
-      {open && (
-        <>
-          <motion.div className="cart-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={close} />
-          <motion.aside
-            className="cart-drawer"
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', stiffness: 320, damping: 34 }}
-            role="dialog"
-            aria-label="Shopping cart"
-          >
-            <div className="cart-drawer-header">
-              <h3>{step === 'address' ? 'Delivery Details' : step === 'success' ? 'Confirmed' : 'Your Cart'}</h3>
-              <button type="button" className="cart-close" onClick={close} aria-label="Close cart">✕</button>
-            </div>
+    <Sheet open={open} onOpenChange={(v) => { if (!v) close(); }}>
+      <SheetContent
+        side="right"
+        showCloseButton={false}
+        aria-label="Shopping cart"
+        overlayClassName="z-[9500] bg-black/60 backdrop-blur-[3px]"
+        className="cart-drawer z-[9600] w-full sm:max-w-[420px] gap-0 rounded-none border-l border-border bg-[var(--bg-elev)] p-0 shadow-none"
+      >
+        <SheetTitle className="sr-only">{step === 'address' ? 'Delivery Details' : step === 'success' ? 'Confirmed' : 'Your Cart'}</SheetTitle>
+        <div className="cart-drawer-header">
+          <h3>{step === 'address' ? 'Delivery Details' : step === 'success' ? 'Confirmed' : 'Your Cart'}</h3>
+          <button type="button" className="cart-close" onClick={close} aria-label="Close cart">✕</button>
+        </div>
 
-            <div className="cart-drawer-body">
-              {step === 'cart' && (
-                <CartStep items={items} updateQty={updateQty} removeItem={removeItem} subtotal={subtotal} onCheckout={() => setStep('address')} />
-              )}
-              {step === 'address' && (
-                <AddressStep subtotal={subtotal} onBack={() => setStep('cart')} onPaid={(id) => { setLastOrderId(id); setStep('success'); }} />
-              )}
-              {step === 'success' && <SuccessStep orderId={lastOrderId} onClose={close} />}
-            </div>
-          </motion.aside>
-        </>
-      )}
-    </AnimatePresence>
+        <div className="cart-drawer-body">
+          {step === 'cart' && (
+            <CartStep items={items} updateQty={updateQty} removeItem={removeItem} subtotal={subtotal} onCheckout={() => setStep('address')} />
+          )}
+          {step === 'address' && (
+            <AddressStep subtotal={subtotal} onBack={() => setStep('cart')} onPaid={(id) => { setLastOrderId(id); setStep('success'); }} />
+          )}
+          {step === 'success' && <SuccessStep orderId={lastOrderId} onClose={close} />}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
