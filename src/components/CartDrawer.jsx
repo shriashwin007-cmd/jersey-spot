@@ -182,9 +182,10 @@ export default function CartDrawer() {
         overlayClassName="z-[9500] bg-black/60 backdrop-blur-[3px]"
         className="cart-drawer z-[9600] w-full sm:max-w-[420px] gap-0 rounded-none border-l border-border bg-[var(--bg-elev)] p-0 shadow-none"
       >
-        <SheetTitle className="sr-only">{step === 'address' ? 'Delivery Details' : step === 'success' ? 'Confirmed' : 'Your Cart'}</SheetTitle>
         <div className="cart-drawer-header">
-          <h3>{step === 'address' ? 'Delivery Details' : step === 'success' ? 'Confirmed' : 'Your Cart'}</h3>
+          <SheetTitle asChild>
+            <h3>{step === 'address' ? 'Delivery Details' : step === 'success' ? 'Confirmed' : 'Your Cart'}</h3>
+          </SheetTitle>
           <button type="button" className="cart-close" onClick={close} aria-label="Close cart">✕</button>
         </div>
 
