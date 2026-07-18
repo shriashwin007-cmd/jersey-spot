@@ -45,8 +45,12 @@ export default function ScrollVideo() {
   const { scrollYProgress } = useScroll({ target: wrapRef, offset: ['start start', 'end end'] });
   const canvasScale = useTransform(scrollYProgress, [0, 1], [1, 1.07]);
 
-  const drawCover = useCallback((ctx, img, w, h, alpha) => {
-    const scale = Math.max(w / img.width, h / img.height);
+  // On a tall phone viewport, a true "cover" fit against a wide landscape
+  // frame crops down to almost one face — fine on desktop's wide canvas, but
+  // on mobile we fit to width instead so the whole composition stays in
+  // frame, letterboxed top/bottom into the section's black background.
+  const drawCover = useCallback((ctx, img, w, h, alpha, fitWidth) => {
+    const scale = fitWidth ? w / img.width : Math.max(w / img.width, h / img.height);
     const dw = img.width * scale, dh = img.height * scale;
     ctx.globalAlpha = alpha;
     ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
@@ -78,10 +82,10 @@ export default function ScrollVideo() {
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
-    drawCover(ctx, loImg, w, h, 1);
+    drawCover(ctx, loImg, w, h, 1, compact);
     const hiImg = images.current[hi];
-    if (hiImg && hi !== lo && frac > 0.01) drawCover(ctx, hiImg, w, h, frac);
-  }, [drawCover]);
+    if (hiImg && hi !== lo && frac > 0.01) drawCover(ctx, hiImg, w, h, frac, compact);
+  }, [drawCover, compact]);
 
   // Preload the sequence with 6 loaders running at once, each chaining to the
   // next frame as it finishes — fast enough to get moving immediately without

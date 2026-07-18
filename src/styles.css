@@ -302,7 +302,7 @@
   font-family: var(--font-display); font-weight: 800; color: var(--gold-bright);
   font-size: clamp(1.8rem, 5vw, 3.6rem); line-height: 1;
 }
-@media (max-width: 720px) { .scrollvid-wrap { height: 448vh; } }
+@media (max-width: 720px) { .scrollvid-wrap { height: 320vh; } }
 
 /* ── Why Us ───────────────────────────────────────────── */
 .why-head { text-align: center; margin-bottom: 52px; }
