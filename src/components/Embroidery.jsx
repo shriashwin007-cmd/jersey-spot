@@ -4,6 +4,7 @@ import CompareSlider from './CompareSlider';
 import { cld } from '../cloudinary';
 import { waLink } from '../config';
 import { Button } from './ui/button';
+import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
 
 const EMBROIDERED_PHOTO = 'https://res.cloudinary.com/hwm5h6fh/image/upload/v1784019861/embroy_version_xicda2.png';
 const PRINTED_PHOTO = 'https://res.cloudinary.com/hwm5h6fh/image/upload/v1784019861/sublimation_version_ohd5iq.png';
@@ -49,20 +50,20 @@ export default function Embroidery() {
           <h2 className="section-title">Two finishes,<br /><span className="g">one obsession</span></h2>
           <p className="section-lead">Drag the slider on the right to compare — or pick a finish below for the full details.</p>
 
-          <div className="emb-toggle" role="tablist" aria-label="Jersey finish">
-            {Object.keys(MODES).map((k) => (
-              <button
-                key={k}
-                role="tab"
-                aria-selected={mode === k}
-                className={`emb-toggle-btn hoverable${mode === k ? ' active' : ''}`}
-                onClick={() => setMode(k)}
-              >
-                {MODES[k].label}
-                {mode === k && <motion.span className="emb-toggle-pill" layoutId="embPill" transition={{ type: 'spring', stiffness: 400, damping: 32 }} />}
-              </button>
-            ))}
-          </div>
+          <Tabs value={mode} onValueChange={setMode}>
+            <TabsList aria-label="Jersey finish" className="emb-toggle h-auto gap-1 rounded-full p-[5px]">
+              {Object.keys(MODES).map((k) => (
+                <TabsTrigger
+                  key={k}
+                  value={k}
+                  className={`emb-toggle-btn hoverable relative z-1 rounded-full border-none bg-transparent shadow-none data-active:bg-transparent data-active:text-[#1a1300] data-active:shadow-none${mode === k ? ' active' : ''}`}
+                >
+                  {MODES[k].label}
+                  {mode === k && <motion.span className="emb-toggle-pill" layoutId="embPill" transition={{ type: 'spring', stiffness: 400, damping: 32 }} />}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
 
           <AnimatePresence mode="wait">
             <motion.ul

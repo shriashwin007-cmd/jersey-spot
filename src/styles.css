@@ -559,9 +559,9 @@
 .faq-item { background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; transition: border-color 0.25s; }
 .faq-item:hover { border-color: var(--gold-line); }
 .faq-q { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 20px 22px; background: none; border: none; text-align: left; font-family: var(--font-ui); font-size: 1rem; font-weight: 600; color: var(--text); }
-.faq-q.open { color: var(--gold-bright); }
-.faq-plus { flex-shrink: 0; font-size: 24px; color: var(--gold); line-height: 1; }
-.faq-a-wrap { overflow: hidden; }
+.faq-q[data-state="open"] { color: var(--gold-bright); }
+.faq-plus { flex-shrink: 0; font-size: 24px; color: var(--gold); line-height: 1; transition: transform 0.25s; }
+.faq-q[data-state="open"] .faq-plus { transform: rotate(45deg); }
 .faq-a { padding: 0 22px 22px; color: var(--text-muted); font-size: 0.95rem; line-height: 1.65; }
 @media (max-width: 820px) { .faq-grid { grid-template-columns: 1fr; gap: 34px; } .faq-head { position: static; } }
 
