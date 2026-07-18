@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Reveal } from './anim';
 
 const QA = [
-  { q: 'What\'s the difference between embroidered and printed jerseys?', a: 'Embroidered kits have names, numbers and crests stitched with thread for a raised, premium, pro-club feel that never cracks or fades. Printed kits use sublimation/heat-press for a smooth, lightweight finish at a lower price — great for bulk team orders.' },
+  { q: 'What\'s the difference between embroidered and printed jerseys?', a: 'Embroidered kits have crests stitched with thread for a raised, premium, pro-club feel that never cracks or fades. Printed kits use sublimation/heat-press for a smooth, lightweight finish at a lower price — great for bulk team orders.' },
   { q: 'How long does an order take?', a: 'Most orders — single kits or full teams — are ready within 48 hours. Large bulk or fully custom designs may take a little longer; we\'ll always confirm the timeline on WhatsApp before we start.' },
   { q: 'Do you take team & bulk orders?', a: 'Absolutely. Schools, clubs and corporate tournaments get special per-piece pricing. Send us your squad list with sizes, names and numbers and we\'ll handle the rest.' },
   { q: 'Can I order a jersey I don\'t see on the site?', a: 'Yes! The site shows just a sample of what\'s in store. Message us on WhatsApp with any club, country or design and we\'ll source or make it for you.' },

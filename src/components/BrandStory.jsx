@@ -24,7 +24,7 @@ export default function BrandStory() {
             counter in {SHOP.city} is now the city's go-to spot for premium jerseys, footballs and boots.
           </p>
           <p className="story-p">
-            We stitch names, numbers and crests in-house, source match-grade footballs, and stock
+            We stitch crests in-house, source match-grade footballs, and stock
             boots built for real play — not just the shelf. When you pull on a {SHOP.name} kit,
             you carry a little bit of Chennai's football heart with you.
           </p>

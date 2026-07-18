@@ -11,7 +11,6 @@ const MODES = {
   embroidered: {
     label: 'Embroidered',
     points: [
-      'Names, numbers & crests stitched thread-by-thread',
       'Raised, textured, premium pro-club feel',
       'Won\'t crack, peel or fade over seasons',
       'Perfect for gifts, captains & club sets',
