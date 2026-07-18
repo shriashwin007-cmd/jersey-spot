@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import logo from '../assets/logo.png';
 import { waLink } from '../config';
 import { useCart } from '../cart';
+import { Button } from './ui/button';
+import { Sheet, SheetContent, SheetTitle } from './ui/sheet';
 
 const LINKS = [
   { href: '#kits', label: 'Catalogue' },
@@ -69,12 +71,14 @@ export default function Navbar() {
               </svg>
               {count > 0 && <span className="nav-cart-badge">{count}</span>}
             </button>
-            <a href="#kits" className="btn btn-gold nav-cta hoverable">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 1.95-1.57L23 6H6" />
-              </svg>
-              Shop Catalogue
-            </a>
+            <Button asChild variant="gold" className="nav-cta hoverable">
+              <a href="#kits">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 1.95-1.57L23 6H6" />
+                </svg>
+                Shop Catalogue
+              </a>
+            </Button>
             <button
               className="nav-burger hoverable"
               onClick={() => setOpen((v) => !v)}
@@ -89,34 +93,32 @@ export default function Navbar() {
         </div>
       </motion.header>
 
-      <AnimatePresence>
-        {open && (
-          <motion.nav
-            className="nav-mobile"
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.22 }}
-          >
-            {LINKS.map((l, i) => (
-              <motion.a
-                key={l.href}
-                href={l.href}
-                className="hoverable"
-                onClick={() => setOpen(false)}
-                initial={{ opacity: 0, x: -14 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05 }}
-              >
-                {l.label}
-              </motion.a>
-            ))}
-            <a href={waLink()} target="_blank" rel="noreferrer" className="btn btn-whatsapp hoverable" onClick={() => setOpen(false)}>
-              Order on WhatsApp
-            </a>
-          </motion.nav>
-        )}
-      </AnimatePresence>
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent
+          side="top"
+          showCloseButton={false}
+          style={{ top: 'var(--nav-h)' }}
+          className="nav-mobile z-[899] inset-x-0 bottom-0 h-auto rounded-none border-t border-border bg-black/98 backdrop-blur-2xl gap-1.5 overflow-y-auto shadow-none"
+        >
+          <SheetTitle className="sr-only">Menu</SheetTitle>
+          {LINKS.map((l, i) => (
+            <motion.a
+              key={l.href}
+              href={l.href}
+              className="hoverable"
+              onClick={() => setOpen(false)}
+              initial={{ opacity: 0, x: -14 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.05 }}
+            >
+              {l.label}
+            </motion.a>
+          ))}
+          <Button asChild variant="whatsapp" className="hoverable" onClick={() => setOpen(false)}>
+            <a href={waLink()} target="_blank" rel="noreferrer">Order on WhatsApp</a>
+          </Button>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

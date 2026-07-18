@@ -4,12 +4,15 @@ import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
-// The site's original pill-shaped CTA buttons (.btn/.btn-gold/.btn-ghost/
+// The site's original pill-shaped CTA buttons (.btn/.btn-gold/.btn-pill-ghost/
 // .btn-whatsapp, defined in src/index.css) predate this component and are
 // reused as-is here rather than re-derived as Tailwind utilities, so every
 // call site gets a consistent Button API without any risk of visual drift
 // from the CSS that's still the single source of truth for their look.
-const LEGACY_VARIANTS = new Set(["gold", "ghost", "whatsapp"])
+// "btn-pill-ghost" (not "ghost") deliberately avoids colliding with shadcn's
+// own built-in "ghost" variant, which generated components like Sheet's
+// close button rely on for a plain small icon-button look.
+const LEGACY_VARIANTS = { gold: "btn-gold", "btn-pill-ghost": "btn-ghost", whatsapp: "btn-whatsapp" }
 
 const buttonVariants = cva(
   "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -57,12 +60,12 @@ function Button({
 }) {
   const Comp = asChild ? Slot.Root : "button"
 
-  if (LEGACY_VARIANTS.has(variant)) {
+  if (variant in LEGACY_VARIANTS) {
     return (
       <Comp
         data-slot="button"
         data-variant={variant}
-        className={cn("btn", `btn-${variant}`, className)}
+        className={cn("btn", LEGACY_VARIANTS[variant], className)}
         {...props} />
     );
   }
