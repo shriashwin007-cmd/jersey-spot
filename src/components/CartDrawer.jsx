@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../cart';
 import { loadRazorpayScript } from '../razorpayLoader';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 const SHIPPING_FEE = 79;
 
@@ -125,16 +127,16 @@ function AddressStep({ subtotal, onBack, onPaid }) {
     <form className="cart-address-form" onSubmit={pay}>
       <button type="button" className="cart-back" onClick={onBack}>← Back to cart</button>
 
-      <label className="field"><span>Full name</span><input value={form.name} onChange={set('name')} /></label>
+      <div className="field"><Label htmlFor="addr-name">Full name</Label><Input id="addr-name" value={form.name} onChange={set('name')} /></div>
       <div className="field-row">
-        <label className="field"><span>Phone</span><input type="tel" value={form.phone} onChange={set('phone')} /></label>
-        <label className="field"><span>Email <em>(optional)</em></span><input type="email" value={form.email} onChange={set('email')} /></label>
+        <div className="field"><Label htmlFor="addr-phone">Phone</Label><Input id="addr-phone" type="tel" value={form.phone} onChange={set('phone')} /></div>
+        <div className="field"><Label htmlFor="addr-email">Email <em>(optional)</em></Label><Input id="addr-email" type="email" value={form.email} onChange={set('email')} /></div>
       </div>
-      <label className="field"><span>Address</span><input value={form.line} onChange={set('line')} placeholder="House no, street, area" /></label>
+      <div className="field"><Label htmlFor="addr-line">Address</Label><Input id="addr-line" value={form.line} onChange={set('line')} placeholder="House no, street, area" /></div>
       <div className="field-row">
-        <label className="field"><span>City</span><input value={form.city} onChange={set('city')} /></label>
-        <label className="field"><span>State</span><input value={form.state} onChange={set('state')} /></label>
-        <label className="field field-qty"><span>Pincode</span><input value={form.pincode} onChange={set('pincode')} /></label>
+        <div className="field"><Label htmlFor="addr-city">City</Label><Input id="addr-city" value={form.city} onChange={set('city')} /></div>
+        <div className="field"><Label htmlFor="addr-state">State</Label><Input id="addr-state" value={form.state} onChange={set('state')} /></div>
+        <div className="field field-qty"><Label htmlFor="addr-pincode">Pincode</Label><Input id="addr-pincode" value={form.pincode} onChange={set('pincode')} /></div>
       </div>
 
       <div className="cart-summary-row"><span>Subtotal</span><span>₹{subtotal}</span></div>

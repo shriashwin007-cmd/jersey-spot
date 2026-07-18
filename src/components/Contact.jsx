@@ -3,10 +3,15 @@ import { motion } from 'framer-motion';
 import { CATEGORIES } from '../categories';
 import { SHOP, waLink } from '../config';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', product: CATEGORIES[0].label, qty: '1', details: '' });
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const setValue = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
 
   const message =
     `Hi ${SHOP.name}! 👋%0A%0A` +
@@ -68,29 +73,34 @@ export default function Contact() {
           <h3 className="contact-form-title">Quick Order</h3>
           <p className="contact-form-sub">Fill this in — it opens WhatsApp with your order ready to send.</p>
 
-          <label className="field">
-            <span>Your name</span>
-            <input type="text" value={form.name} onChange={set('name')} placeholder="e.g. Arjun" className="hoverable" />
-          </label>
-
-          <div className="field-row">
-            <label className="field">
-              <span>Product</span>
-              <select value={form.product} onChange={set('product')} className="hoverable">
-                {CATEGORIES.map((c) => <option key={c.value}>{c.label}</option>)}
-                <option>Team / Bulk Order</option>
-              </select>
-            </label>
-            <label className="field field-qty">
-              <span>Qty</span>
-              <input type="number" min="1" value={form.qty} onChange={set('qty')} className="hoverable" />
-            </label>
+          <div className="field">
+            <Label htmlFor="contact-name">Your name</Label>
+            <Input id="contact-name" type="text" value={form.name} onChange={set('name')} placeholder="e.g. Arjun" className="hoverable" />
           </div>
 
-          <label className="field">
-            <span>Details <em>(sizes, numbers, design…)</em></span>
-            <textarea rows="3" value={form.details} onChange={set('details')} placeholder="Size M, name RONALDO, number 7…" className="hoverable" />
-          </label>
+          <div className="field-row">
+            <div className="field">
+              <Label htmlFor="contact-product">Product</Label>
+              <Select value={form.product} onValueChange={setValue('product')}>
+                <SelectTrigger id="contact-product" className="hoverable w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((c) => <SelectItem key={c.value} value={c.label}>{c.label}</SelectItem>)}
+                  <SelectItem value="Team / Bulk Order">Team / Bulk Order</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="field field-qty">
+              <Label htmlFor="contact-qty">Qty</Label>
+              <Input id="contact-qty" type="number" min="1" value={form.qty} onChange={set('qty')} className="hoverable" />
+            </div>
+          </div>
+
+          <div className="field">
+            <Label htmlFor="contact-details">Details <em>(sizes, numbers, design…)</em></Label>
+            <Textarea id="contact-details" rows="3" value={form.details} onChange={set('details')} placeholder="Size M, name RONALDO, number 7…" className="hoverable" />
+          </div>
 
           <Button type="submit" variant="whatsapp" className="contact-submit hoverable">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>

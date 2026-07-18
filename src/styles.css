@@ -331,6 +331,9 @@
 .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; position: relative; }
 .field > span { font-size: 13px; font-weight: 600; color: var(--text); }
 .field > span em { color: var(--text-muted); font-weight: 400; }
+/* Raw <input>/<select>/<textarea> styling — still used by ProductModal's
+   quick-order form. Contact/CartDrawer now use shadcn/ui field primitives
+   instead, whose own Tailwind classes take precedence over this rule. */
 .field input, .field select, .field textarea {
   width: 100%; padding: 13px 15px; font-size: 15px; font-family: inherit;
   color: var(--text); background: var(--bg); border: 1px solid var(--border-strong);
