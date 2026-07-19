@@ -18,6 +18,21 @@ async function api(path, { password, ...opts } = {}) {
   return data;
 }
 
+// Club list is fetched, not static like CATEGORIES — it reflects whatever
+// logos currently exist in Cloudinary (see /api/clubs).
+function useClubs() {
+  const [clubs, setClubs] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/clubs')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (!cancelled && data?.clubs) setClubs(data.clubs); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+  return clubs;
+}
+
 async function uploadToCloudinary(file) {
   const form = new FormData();
   form.append('file', file);
@@ -273,9 +288,11 @@ function BlurEditor({ item, onSave, onClose }) {
 // are shared across the batch (they're normally the same for a fresh drop of
 // kits), but each photo gets its own required name field since those differ.
 function UploadForm({ password, onAdded }) {
+  const clubs = useClubs();
   const [items, setItems] = useState([]);
   const [tag, setTag] = useState('');
   const [category, setCategory] = useState('embroidered');
+  const [club, setClub] = useState('');
   const [price, setPrice] = useState('');
   const [inStock, setInStock] = useState(true);
   const [buyOnline, setBuyOnline] = useState(false);
@@ -327,6 +344,7 @@ function UploadForm({ password, onAdded }) {
             name: it.name,
             tag,
             category,
+            club,
             price: Number(price) || 0,
             inStock,
             buyOnline,
@@ -393,6 +411,13 @@ function UploadForm({ password, onAdded }) {
             {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
         </label>
+        <label className="admin-field">
+          <span>Club <em>(jerseys only)</em></span>
+          <select value={club} onChange={(e) => setClub(e.target.value)}>
+            <option value="">No club</option>
+            {clubs.map((c) => <option key={c.publicId} value={c.name}>{c.name}</option>)}
+          </select>
+        </label>
         <label className="admin-field admin-field-price">
           <span>Price (₹)</span>
           <input type="number" min="0" max="999999" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="1499" />
@@ -427,10 +452,12 @@ function UploadForm({ password, onAdded }) {
 }
 
 function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
+  const clubs = useClubs();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(p.name);
   const [tag, setTag] = useState(p.tag);
   const [category, setCategory] = useState(p.category);
+  const [club, setClub] = useState(p.club || '');
   const [price, setPrice] = useState(p.price);
   const [busy, setBusy] = useState(false);
   const [blurOpen, setBlurOpen] = useState(false);
@@ -463,7 +490,7 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
     try {
       const { product } = await api(`/api/products/${p.id}`, {
         method: 'PUT', password,
-        body: JSON.stringify({ name, tag, category, price: Number(price) || 0 }),
+        body: JSON.stringify({ name, tag, category, club, price: Number(price) || 0 }),
       });
       onUpdated(product);
       setEditing(false);
@@ -527,6 +554,10 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
           <select value={category} onChange={(e) => setCategory(e.target.value)}>
             {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
+          <select value={club} onChange={(e) => setClub(e.target.value)}>
+            <option value="">No club</option>
+            {clubs.map((c) => <option key={c.publicId} value={c.name}>{c.name}</option>)}
+          </select>
           <input type="number" min="0" max="999999" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Price" />
         </div>
       ) : (
@@ -536,7 +567,7 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
             {!p.in_stock && <span className="admin-badge-soldout">Sold Out</span>}
             {p.buy_online && <span className="admin-badge-buyonline">Buy Online</span>}
           </div>
-          <div className="admin-row-meta">{categoryLabel(p.category)} · {p.tag || '—'} · ₹{p.price}{p.enquiry_clicks > 0 ? ` · ${p.enquiry_clicks} enquiries` : ''}</div>
+          <div className="admin-row-meta">{categoryLabel(p.category)}{p.club ? ` · ${p.club}` : ''} · {p.tag || '—'} · ₹{p.price}{p.enquiry_clicks > 0 ? ` · ${p.enquiry_clicks} enquiries` : ''}</div>
         </div>
       )}
       <div className="admin-row-actions">

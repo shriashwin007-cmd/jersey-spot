@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     if (!checkAdminPassword(req)) return res.status(401).json({ error: 'Unauthorized' });
 
     if (req.method === 'PUT') {
-      const { name, tag, category, price, sortOrder, inStock, buyOnline, imageUrl, cloudinaryPublicId } = req.body || {};
+      const { name, tag, category, club, price, sortOrder, inStock, buyOnline, imageUrl, cloudinaryPublicId } = req.body || {};
       const safePrice = price === undefined || price === null ? null : sanitizePrice(price);
       const safeInStock = inStock === undefined || inStock === null ? null : !!inStock;
       const safeBuyOnline = buyOnline === undefined || buyOnline === null ? null : !!buyOnline;
@@ -32,6 +32,7 @@ export default async function handler(req, res) {
           name = COALESCE(${name}, name),
           tag = COALESCE(${tag}, tag),
           category = COALESCE(${category}, category),
+          club = COALESCE(${club}, club),
           price = COALESCE(${safePrice}, price),
           sort_order = COALESCE(${sortOrder}, sort_order),
           in_stock = COALESCE(${safeInStock}, in_stock),
@@ -39,7 +40,7 @@ export default async function handler(req, res) {
           image_url = COALESCE(${newImageUrl}, image_url),
           cloudinary_public_id = COALESCE(${newPublicId}, cloudinary_public_id)
         WHERE id = ${id}
-        RETURNING id, name, tag, category, price, image_url, cloudinary_public_id, sort_order, in_stock, buy_online, enquiry_clicks, created_at
+        RETURNING id, name, tag, category, club, price, image_url, cloudinary_public_id, sort_order, in_stock, buy_online, enquiry_clicks, created_at
       `;
       if (!row) return res.status(404).json({ error: 'Not found' });
       if (safeInStock !== null) {

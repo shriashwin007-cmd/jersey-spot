@@ -22,6 +22,8 @@ const FILTERS = [{ value: 'all', label: 'All' }, ...CATEGORIES.map((c) => ({ val
 export default function Gallery() {
   const [kits, setKits] = useState(FALLBACK_KITS);
   const [filter, setFilter] = useState('all');
+  const [clubs, setClubs] = useState([]);
+  const [clubFilter, setClubFilter] = useState(null);
   const [preview, setPreview] = useState(null);
   const { addItem } = useCart();
 
@@ -51,6 +53,7 @@ export default function Gallery() {
               name: p.name,
               tag: p.tag,
               category: p.category,
+              club: p.club,
               price: p.price,
               buyOnline: p.buy_online,
               msg: `Hi! I want the ${p.name}${p.tag ? ` (${p.tag})` : ''} jersey.`,
@@ -61,9 +64,18 @@ export default function Gallery() {
     return () => { cancelled = true; };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/clubs')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (!cancelled && data?.clubs) setClubs(data.clubs); })
+      .catch(() => {}); // no club row if it fails — category filtering still works
+    return () => { cancelled = true; };
+  }, []);
+
   const filtered = useMemo(
-    () => (filter === 'all' ? kits : kits.filter((k) => k.category === filter)),
-    [kits, filter]
+    () => kits.filter((k) => (filter === 'all' || k.category === filter) && (!clubFilter || k.club === clubFilter)),
+    [kits, filter, clubFilter]
   );
 
   return (
@@ -98,6 +110,22 @@ export default function Gallery() {
             </button>
           ))}
         </div>
+
+        {clubs.length > 0 && (
+          <div className="gallery-clubs" aria-label="Filter by club">
+            {clubs.map((c) => (
+              <button
+                key={c.publicId}
+                aria-pressed={clubFilter === c.name}
+                className={`gallery-club-btn hoverable${clubFilter === c.name ? ' active' : ''}`}
+                onClick={() => setClubFilter((cur) => (cur === c.name ? null : c.name))}
+                title={c.name}
+              >
+                <img src={c.logoUrl} alt={c.name} loading="lazy" />
+              </button>
+            ))}
+          </div>
+        )}
 
         {filtered.length === 0 ? (
           <div className="gallery-empty">Nothing in this category yet — message us, we've probably still got it.</div>
