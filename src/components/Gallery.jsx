@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import DomeSlider from './DomeSlider';
 import ProductModal from './ProductModal';
 import { useCart } from '../cart';
@@ -79,7 +79,55 @@ export default function Gallery() {
   );
 
   return (
-    <section className="section gallery" id="kits">
+    <>
+      {clubs.length > 0 && (
+        <section className="section club-showcase" id="clubs">
+          <div className="club-showcase-glow" aria-hidden />
+          <div className="container">
+            <motion.div
+              className="club-showcase-head"
+              initial={{ opacity: 0, y: 34 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <span className="eyebrow">Pick Your Side</span>
+              <h2 className="section-title">Shop by <span className="g">club</span></h2>
+              <p className="section-lead">Tap a crest to jump straight to that club's kits.</p>
+            </motion.div>
+
+            <div className="club-showcase-grid" role="tablist" aria-label="Filter by club">
+              {clubs.map((c, i) => {
+                const active = clubFilter === c.name;
+                return (
+                  <motion.button
+                    key={c.publicId}
+                    role="tab"
+                    aria-pressed={active}
+                    className={`club-card hoverable${active ? ' active' : ''}`}
+                    onClick={() => {
+                      setClubFilter((cur) => (cur === c.name ? null : c.name));
+                      document.getElementById('kits')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                    initial={{ opacity: 0, y: 24, scale: 0.9 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.5, delay: (i % 8) * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={{ y: -8, scale: 1.06 }}
+                    whileTap={{ scale: 0.96 }}
+                  >
+                    <span className="club-card-ring" aria-hidden />
+                    <img src={c.logoUrl} alt="" loading="lazy" />
+                    <span className="club-card-name">{c.name}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="section gallery" id="kits">
       <div className="container">
         <motion.div
           className="gallery-head"
@@ -111,21 +159,20 @@ export default function Gallery() {
           ))}
         </div>
 
-        {clubs.length > 0 && (
-          <div className="gallery-clubs" aria-label="Filter by club">
-            {clubs.map((c) => (
-              <button
-                key={c.publicId}
-                aria-pressed={clubFilter === c.name}
-                className={`gallery-club-btn hoverable${clubFilter === c.name ? ' active' : ''}`}
-                onClick={() => setClubFilter((cur) => (cur === c.name ? null : c.name))}
-                title={c.name}
-              >
-                <img src={c.logoUrl} alt={c.name} loading="lazy" />
-              </button>
-            ))}
-          </div>
-        )}
+        <AnimatePresence>
+          {clubFilter && (
+            <motion.div
+              className="gallery-active-club"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              Showing <strong>{clubFilter}</strong>
+              <button type="button" className="hoverable" onClick={() => setClubFilter(null)}>Clear ✕</button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {filtered.length === 0 ? (
           <div className="gallery-empty">Nothing in this category yet — message us, we've probably still got it.</div>
@@ -157,6 +204,7 @@ export default function Gallery() {
         onAddToCart={(item) => addItem({ id: item.id, name: item.name, price: item.price, img: item.img })}
         onEnquire={enquire}
       />
-    </section>
+      </section>
+    </>
   );
 }

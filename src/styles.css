@@ -381,16 +381,49 @@
 }
 .gallery-filter-btn:hover { border-color: var(--gold-line); color: var(--text); }
 .gallery-filter-btn.active { background: linear-gradient(180deg, var(--gold-bright), var(--gold)); border-color: transparent; color: #1a1300; }
-.gallery-clubs { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 36px; }
-.gallery-club-btn {
-  width: 46px; height: 46px; padding: 8px; border-radius: 50%;
-  background: var(--bg-elev-2); border: 1px solid var(--border-strong);
-  display: grid; place-items: center; transition: border-color 0.2s, background 0.2s, transform 0.2s;
-}
-.gallery-club-btn img { width: 100%; height: 100%; object-fit: contain; }
-.gallery-club-btn:hover { border-color: var(--gold-line); transform: translateY(-2px); }
-.gallery-club-btn.active { background: var(--gold-soft); border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
 .gallery-empty { text-align: center; color: var(--text-muted); font-size: 0.95rem; padding: 60px 20px; }
+.gallery-active-club {
+  display: flex; align-items: center; justify-content: center; gap: 12px; overflow: hidden;
+  margin: -14px auto 28px; color: var(--text-muted); font-size: 0.9rem;
+}
+.gallery-active-club strong { color: var(--gold-bright); }
+.gallery-active-club button { color: var(--text-subtle); font-size: 0.85rem; }
+.gallery-active-club button:hover { color: var(--gold-bright); }
+
+/* ── Club showcase (Shop by Club) ─────────────────────── */
+.club-showcase { position: relative; overflow: hidden; padding-bottom: 90px; }
+.club-showcase-glow {
+  position: absolute; top: -20%; left: 50%; transform: translateX(-50%);
+  width: 900px; height: 500px; background: radial-gradient(circle, var(--gold-soft), transparent 70%);
+  filter: blur(60px); pointer-events: none;
+}
+.club-showcase-head { text-align: center; max-width: 640px; margin: 0 auto 48px; position: relative; }
+.club-showcase-head .section-lead { margin-left: auto; margin-right: auto; }
+.club-showcase-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 22px;
+  position: relative;
+}
+.club-card {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px;
+  padding: 28px 14px 20px; border-radius: var(--r-lg); background: var(--bg-elev-2);
+  border: 1px solid var(--border); transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+}
+.club-card:hover { border-color: var(--gold-line); box-shadow: var(--shadow-md); }
+.club-card.active { border-color: var(--gold); background: var(--gold-soft); box-shadow: 0 0 0 3px var(--gold-soft), var(--shadow-gold); }
+.club-card-ring {
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  width: 92px; height: 92px; border-radius: 50%; border: 1px dashed var(--gold-line);
+  opacity: 0; transition: opacity 0.25s;
+}
+.club-card:hover .club-card-ring, .club-card.active .club-card-ring { opacity: 1; }
+.club-card img { position: relative; width: 76px; height: 76px; object-fit: contain; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.5)); }
+.club-card-name { position: relative; font-size: 13px; font-weight: 600; color: var(--text); text-align: center; line-height: 1.3; }
+@media (max-width: 720px) {
+  .club-showcase-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 14px; }
+  .club-card { padding: 20px 8px 14px; }
+  .club-card img { width: 58px; height: 58px; }
+  .club-card-ring { width: 72px; height: 72px; top: 10px; }
+}
 
 /* ── Dome 3D slider ────────────────────────────────────── */
 .dome-wrap { display: flex; flex-direction: column; align-items: center; gap: 34px; }
