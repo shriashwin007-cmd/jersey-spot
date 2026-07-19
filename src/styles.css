@@ -374,6 +374,16 @@
 .gallery-cta { display: flex; justify-content: center; margin-top: 48px; }
 
 .gallery-filters { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-bottom: 36px; }
+@media (max-width: 720px) {
+  /* 9 category pills wrap to 5 rows at this width — scroll horizontally
+     instead so a shopper sees actual products sooner. */
+  .gallery-filters {
+    flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; margin: 0 -24px 28px; padding: 0 24px 4px;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .gallery-filters::-webkit-scrollbar { display: none; }
+  .gallery-filter-btn { flex-shrink: 0; }
+}
 .gallery-filter-btn {
   padding: 9px 20px; border-radius: var(--r-pill); font-size: 13px; font-weight: 600;
   background: var(--bg-elev-2); border: 1px solid var(--border-strong); color: var(--text-muted);

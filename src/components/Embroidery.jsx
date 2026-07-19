@@ -48,7 +48,7 @@ export default function Embroidery() {
         >
           <span className="eyebrow">The Craft</span>
           <h2 className="section-title">Two finishes,<br /><span className="g">one obsession</span></h2>
-          <p className="section-lead">Drag the slider on the right to compare — or pick a finish below for the full details.</p>
+          <p className="section-lead">Drag the slider to compare — or pick a finish below for the full details.</p>
 
           <Tabs value={mode} onValueChange={setMode}>
             <TabsList aria-label="Jersey finish" className="emb-toggle h-auto gap-1 rounded-full p-[5px]">
