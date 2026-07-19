@@ -123,7 +123,10 @@ export async function listClubLogos() {
     clubs.push({
       publicId,
       name,
-      logoUrl: `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_160/${publicId}`,
+      // A mild blur smooths the fine dither noise baked into these logos'
+      // near-white backgrounds (several are old, low-color-depth PNGs) so
+      // they sit cleanly on the badge plate instead of showing a faint grid.
+      logoUrl: `https://res.cloudinary.com/${cloudName}/image/upload/e_blur:150,f_auto,q_auto,w_260/${publicId}`,
     });
   }
   clubs.sort((a, b) => a.name.localeCompare(b.name));

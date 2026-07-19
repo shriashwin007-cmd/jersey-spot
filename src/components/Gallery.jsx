@@ -116,8 +116,9 @@ export default function Gallery() {
                     whileHover={{ y: -8, scale: 1.06 }}
                     whileTap={{ scale: 0.96 }}
                   >
-                    <span className="club-card-ring" aria-hidden />
-                    <img src={c.logoUrl} alt="" loading="lazy" />
+                    <span className="club-card-badge">
+                      <img src={c.logoUrl} alt="" loading="lazy" />
+                    </span>
                     <span className="club-card-name">{c.name}</span>
                   </motion.button>
                 );
