@@ -106,23 +106,6 @@
 .marquee-item { display: inline-flex; align-items: center; gap: 26px; padding: 0 26px; font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--text); white-space: nowrap; }
 .marquee-star { color: var(--gold); font-size: 1rem; }
 
-/* ── Brand story ──────────────────────────────────────── */
-.story-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 60px; align-items: center; }
-.story-p { color: var(--text-muted); margin-top: 18px; max-width: 54ch; }
-.story-quote { position: relative; margin-top: 34px; padding: 22px 26px; background: var(--gold-soft); border: 1px solid var(--gold-line); border-radius: var(--r-md); font-family: var(--font-display); font-weight: 600; font-size: 1.25rem; color: var(--gold-bright); }
-.story-quote-mark { font-size: 3rem; line-height: 0; position: absolute; top: 22px; left: 12px; opacity: 0.3; }
-.story-quote { padding-left: 44px; }
-.story-quote-by { display: block; font-style: normal; font-family: var(--font-body); font-size: 0.8rem; color: var(--text-muted); margin-top: 10px; letter-spacing: 0.04em; }
-.story-panel-parallax { will-change: transform; }
-.story-panel { position: relative; }
-.story-panel-glow { position: absolute; inset: -20% -10%; background: radial-gradient(circle at 60% 40%, var(--gold-soft), transparent 65%); filter: blur(30px); }
-.story-panel-inner { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.story-tile { background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 24px 20px; transition: border-color 0.3s, background 0.3s; }
-.story-tile:hover { border-color: var(--gold-line); background: var(--bg-elev-3); }
-.story-tile-k { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
-.story-tile-v { font-family: var(--font-display); font-size: 1.15rem; color: var(--text); margin-top: 8px; }
-@media (max-width: 860px) { .story-grid { grid-template-columns: 1fr; gap: 40px; } }
-
 /* ── What We Sell ─────────────────────────────────────── */
 .sell-head { text-align: center; max-width: 640px; margin: 0 auto 56px; }
 .sell-head .section-lead { margin-left: auto; margin-right: auto; }
@@ -266,43 +249,6 @@
       inset 0 -10px 16px rgba(232,48,42,0.42);
   }
 }
-
-/* ── ScrollVideo (sticky, scroll-scrubbed frame sequence) ── */
-/* Wrapper height controls playback speed relative to scroll distance — 40%
-   taller than the original 450vh/320vh so the same 151 frames stretch over
-   more scroll and read as slower, smoother motion. */
-.scrollvid-wrap { position: relative; height: 630vh; }
-.scrollvid-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; background: #000; }
-.scrollvid-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; transform-origin: center center; }
-.scrollvid-vignette {
-  position: absolute; inset: 0; pointer-events: none;
-  background:
-    linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 18%, rgba(0,0,0,0) 78%, rgba(0,0,0,0.75) 100%),
-    radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
-}
-.scrollvid-loadbar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255,255,255,0.12); }
-.scrollvid-loadbar span { display: block; height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-bright)); transition: width 0.15s linear; }
-
-/* 3D text stage — each phrase flips in on the X axis with real depth (z),
-   so it reads as a physical card rotating into place rather than a fade. */
-.scrollvid-textstage {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  perspective: 1200px; pointer-events: none; z-index: 2;
-}
-.scrollvid-line {
-  position: absolute; display: flex; flex-direction: column; align-items: center; gap: 6px;
-  text-align: center; transform-style: preserve-3d; will-change: transform, opacity;
-  text-shadow: 0 8px 40px rgba(0,0,0,0.6);
-}
-.scrollvid-line-big {
-  font-family: var(--font-display); font-weight: 800; color: #fff;
-  font-size: clamp(2.6rem, 7vw, 5.5rem); line-height: 1; letter-spacing: -0.01em;
-}
-.scrollvid-line-small {
-  font-family: var(--font-display); font-weight: 800; color: var(--gold-bright);
-  font-size: clamp(1.8rem, 5vw, 3.6rem); line-height: 1;
-}
-@media (max-width: 720px) { .scrollvid-wrap { height: 320vh; } }
 
 /* ── Why Us ───────────────────────────────────────────── */
 .why-head { text-align: center; margin-bottom: 52px; }
