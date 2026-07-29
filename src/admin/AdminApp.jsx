@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from './cloudinaryConfig';
 import { CATEGORIES, categoryLabel } from '../categories';
+import { CLUBS } from '../clubs';
 
 const PASSWORD_KEY = 'jersey_admin_pw';
 
@@ -16,21 +17,6 @@ async function api(path, { password, ...opts } = {}) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
   return data;
-}
-
-// Club list is fetched, not static like CATEGORIES — it reflects whatever
-// logos currently exist in Cloudinary (see /api/clubs).
-function useClubs() {
-  const [clubs, setClubs] = useState([]);
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/clubs')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (!cancelled && data?.clubs) setClubs(data.clubs); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, []);
-  return clubs;
 }
 
 async function uploadToCloudinary(file) {
@@ -288,7 +274,6 @@ function BlurEditor({ item, onSave, onClose }) {
 // are shared across the batch (they're normally the same for a fresh drop of
 // kits), but each photo gets its own required name field since those differ.
 function UploadForm({ password, onAdded }) {
-  const clubs = useClubs();
   const [items, setItems] = useState([]);
   const [tag, setTag] = useState('');
   const [category, setCategory] = useState('embroidered');
@@ -415,7 +400,7 @@ function UploadForm({ password, onAdded }) {
           <span>Club <em>(jerseys only)</em></span>
           <select value={club} onChange={(e) => setClub(e.target.value)}>
             <option value="">No club</option>
-            {clubs.map((c) => <option key={c.publicId} value={c.name}>{c.name}</option>)}
+            {CLUBS.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
           </select>
         </label>
         <label className="admin-field admin-field-price">
@@ -452,7 +437,6 @@ function UploadForm({ password, onAdded }) {
 }
 
 function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
-  const clubs = useClubs();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(p.name);
   const [tag, setTag] = useState(p.tag);
@@ -556,7 +540,7 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
           </select>
           <select value={club} onChange={(e) => setClub(e.target.value)}>
             <option value="">No club</option>
-            {clubs.map((c) => <option key={c.publicId} value={c.name}>{c.name}</option>)}
+            {CLUBS.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
           </select>
           <input type="number" min="0" max="999999" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Price" />
         </div>

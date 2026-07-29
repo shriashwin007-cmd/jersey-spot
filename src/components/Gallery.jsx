@@ -4,6 +4,8 @@ import DomeSlider from './DomeSlider';
 import ProductModal from './ProductModal';
 import { useCart } from '../cart';
 import { CATEGORIES } from '../categories';
+import { CLUBS } from '../clubs';
+import { cld } from '../cloudinary';
 import { SHOP, waLink } from '../config';
 
 // Static fallback — shown until the admin catalog has real entries, or if
@@ -22,7 +24,6 @@ const FILTERS = [{ value: 'all', label: 'All' }, ...CATEGORIES.map((c) => ({ val
 export default function Gallery() {
   const [kits, setKits] = useState(FALLBACK_KITS);
   const [filter, setFilter] = useState('all');
-  const [clubs, setClubs] = useState([]);
   const [clubFilter, setClubFilter] = useState(null);
   const [preview, setPreview] = useState(null);
   const { addItem } = useCart();
@@ -64,15 +65,6 @@ export default function Gallery() {
     return () => { cancelled = true; };
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/clubs')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (!cancelled && data?.clubs) setClubs(data.clubs); })
-      .catch(() => {}); // no club row if it fails — category filtering still works
-    return () => { cancelled = true; };
-  }, []);
-
   const filtered = useMemo(
     () => kits.filter((k) => (filter === 'all' || k.category === filter) && (!clubFilter || k.club === clubFilter)),
     [kits, filter, clubFilter]
@@ -80,53 +72,49 @@ export default function Gallery() {
 
   return (
     <>
-      {clubs.length > 0 && (
-        <section className="section club-showcase" id="clubs">
-          <div className="club-showcase-glow" aria-hidden />
-          <div className="container">
-            <motion.div
-              className="club-showcase-head"
-              initial={{ opacity: 0, y: 34 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <span className="eyebrow">Pick Your Side</span>
-              <h2 className="section-title">Shop by <span className="g">club</span></h2>
-              <p className="section-lead">Tap a crest to jump straight to that club's kits.</p>
-            </motion.div>
+      <section className="section club-showcase" id="clubs">
+        <div className="club-showcase-glow" aria-hidden />
+        <div className="container">
+          <motion.div
+            className="club-showcase-head"
+            initial={{ opacity: 0, y: 34 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <span className="eyebrow">Pick Your Side</span>
+            <h2 className="section-title">Shop by <span className="g">club</span></h2>
+            <p className="section-lead">Tap a crest to jump straight to that club's kits.</p>
+          </motion.div>
 
-            <div className="club-showcase-grid" role="tablist" aria-label="Filter by club">
-              {clubs.map((c, i) => {
-                const active = clubFilter === c.name;
-                return (
-                  <motion.button
-                    key={c.publicId}
-                    role="tab"
-                    aria-pressed={active}
-                    className={`club-card hoverable${active ? ' active' : ''}`}
-                    onClick={() => {
-                      setClubFilter((cur) => (cur === c.name ? null : c.name));
-                      document.getElementById('kits')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }}
-                    initial={{ opacity: 0, y: 24, scale: 0.9 }}
-                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                    viewport={{ once: true, margin: '-40px' }}
-                    transition={{ duration: 0.5, delay: (i % 8) * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                    whileHover={{ y: -8, scale: 1.06 }}
-                    whileTap={{ scale: 0.96 }}
-                  >
-                    <span className="club-card-badge">
-                      <img src={c.logoUrl} alt="" loading="lazy" />
-                    </span>
-                    <span className="club-card-name">{c.name}</span>
-                  </motion.button>
-                );
-              })}
-            </div>
+          <div className="club-showcase-grid" role="tablist" aria-label="Filter by club">
+            {CLUBS.map((c, i) => {
+              const active = clubFilter === c.name;
+              return (
+                <motion.button
+                  key={c.id}
+                  role="tab"
+                  aria-pressed={active}
+                  className={`club-card hoverable${active ? ' active' : ''}`}
+                  onClick={() => {
+                    setClubFilter((cur) => (cur === c.name ? null : c.name));
+                    document.getElementById('kits')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
+                  initial={{ opacity: 0, y: 24, scale: 0.9 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, margin: '-40px' }}
+                  transition={{ duration: 0.5, delay: (i % 8) * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ y: -8, scale: 1.06 }}
+                  whileTap={{ scale: 0.96 }}
+                >
+                  <img src={cld(c.url, 'f_auto,q_auto,w_260')} alt="" loading="lazy" />
+                  <span className="club-card-name">{c.name}</span>
+                </motion.button>
+              );
+            })}
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       <section className="section gallery" id="kits">
       <div className="container">
