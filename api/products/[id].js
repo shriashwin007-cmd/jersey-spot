@@ -12,20 +12,22 @@ export default async function handler(req, res) {
     if (!checkAdminPassword(req)) return res.status(401).json({ error: 'Unauthorized' });
 
     if (req.method === 'PUT') {
-      const { name, tag, category, club, price, sortOrder, inStock, buyOnline, imageUrl, cloudinaryPublicId } = req.body || {};
+      const { name, tag, category, club, price, sortOrder, inStock, buyOnline, imageUrl, cloudinaryPublicId, images } = req.body || {};
       const safePrice = price === undefined || price === null ? null : sanitizePrice(price);
       const safeInStock = inStock === undefined || inStock === null ? null : !!inStock;
       const safeBuyOnline = buyOnline === undefined || buyOnline === null ? null : !!buyOnline;
       const newImageUrl = imageUrl || null;
       const newPublicId = cloudinaryPublicId || null;
 
-      // When the image is being replaced (e.g. re-blurred), grab the old
-      // Cloudinary id first so we can delete that asset after the swap.
       let oldPublicId = null;
-      if (newImageUrl) {
-        const [cur] = await sql`SELECT cloudinary_public_id FROM products WHERE id = ${id}`;
+      let oldImages = null;
+      if (newImageUrl || images !== undefined) {
+        const [cur] = await sql`SELECT cloudinary_public_id, images FROM products WHERE id = ${id}`;
         oldPublicId = cur?.cloudinary_public_id || null;
+        oldImages = cur?.images || [];
       }
+
+      const imagesJson = images !== undefined ? JSON.stringify(images) : null;
 
       const [row] = await sql`
         UPDATE products SET
@@ -38,9 +40,10 @@ export default async function handler(req, res) {
           in_stock = COALESCE(${safeInStock}, in_stock),
           buy_online = COALESCE(${safeBuyOnline}, buy_online),
           image_url = COALESCE(${newImageUrl}, image_url),
-          cloudinary_public_id = COALESCE(${newPublicId}, cloudinary_public_id)
+          cloudinary_public_id = COALESCE(${newPublicId}, cloudinary_public_id),
+          images = COALESCE(${imagesJson}::jsonb, images)
         WHERE id = ${id}
-        RETURNING id, name, tag, category, club, price, image_url, cloudinary_public_id, sort_order, in_stock, buy_online, enquiry_clicks, created_at
+        RETURNING id, name, tag, category, club, price, image_url, cloudinary_public_id, sort_order, in_stock, buy_online, enquiry_clicks, created_at, images
       `;
       if (!row) return res.status(404).json({ error: 'Not found' });
       if (safeInStock !== null) {
@@ -50,13 +53,30 @@ export default async function handler(req, res) {
         await destroyCloudinaryAsset(oldPublicId);
         await logActivity('logo_blurred', `Updated image for "${row.name}"`);
       }
+      // Clean up removed images from Cloudinary when images array is replaced
+      if (images !== undefined && oldImages.length > 0) {
+        const newIds = new Set((images || []).map((img) => img.publicId));
+        for (const oldImg of oldImages) {
+          if (oldImg.publicId && !newIds.has(oldImg.publicId)) {
+            await destroyCloudinaryAsset(oldImg.publicId);
+          }
+        }
+      }
       return res.status(200).json({ product: row });
     }
 
     if (req.method === 'DELETE') {
-      const [row] = await sql`DELETE FROM products WHERE id = ${id} RETURNING name, cloudinary_public_id`;
+      const [row] = await sql`DELETE FROM products WHERE id = ${id} RETURNING name, cloudinary_public_id, images`;
       if (!row) return res.status(404).json({ error: 'Not found' });
       await destroyCloudinaryAsset(row.cloudinary_public_id);
+      // Also delete all additional images from Cloudinary
+      if (row.images && row.images.length > 0) {
+        for (const img of row.images) {
+          if (img.publicId) {
+            await destroyCloudinaryAsset(img.publicId);
+          }
+        }
+      }
       await logActivity('product_deleted', `Deleted "${row.name}"`);
       return res.status(200).json({ ok: true });
     }

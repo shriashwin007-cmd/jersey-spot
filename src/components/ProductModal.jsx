@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { SHOP } from '../config';
 
@@ -15,9 +15,9 @@ function OrderForm({ product, onBack, onSent }) {
     }
     setError('');
     const lines = [
-      `Hi ${SHOP.name}! 👋 I'd like to buy this:`,
+      `Hi ${SHOP.name}! I'd like to buy this:`,
       '',
-      `🛒 ${product.name}${product.tag ? ` (${product.tag})` : ''}`,
+      `${product.name}${product.tag ? ` (${product.tag})` : ''}`,
       `Quantity: ${form.qty}`,
       product.price ? `Price: ₹${product.price} each` : null,
       '',
@@ -59,21 +59,41 @@ function OrderForm({ product, onBack, onSent }) {
   );
 }
 
-// Amazon-style product preview: click a kit in the gallery and this opens a
-// bigger view with the image, details and the buy/enquire actions in one
-// place. `product` is the same kit shape the DomeSlider uses.
+// Amazon-style product detail modal with multi-image gallery.
+// `product` shape: { img, images: [{url, label}...], name, tag, category, price, ... }
 export default function ProductModal({ product, onClose, onAddToCart, onEnquire }) {
   const [added, setAdded] = useState(false);
-  const [step, setStep] = useState('view'); // view | order | sent
+  const [step, setStep] = useState('view');
+  const [activeImg, setActiveImg] = useState(0);
+
+  const gallery = product
+    ? [{ url: product.img, label: '' }, ...((product.images || []).map((im) => ({ url: im.url, label: im.label || '' })))]
+    : [];
 
   useEffect(() => {
     setAdded(false);
     setStep('view');
+    setActiveImg(0);
     if (!product) return;
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [product, onClose]);
+
+  const navigateImg = useCallback((dir) => {
+    if (gallery.length <= 1) return;
+    setActiveImg((prev) => (prev + dir + gallery.length) % gallery.length);
+  }, [gallery.length]);
+
+  useEffect(() => {
+    if (!product || gallery.length <= 1) return;
+    const onKey = (e) => {
+      if (e.key === 'ArrowLeft') navigateImg(-1);
+      if (e.key === 'ArrowRight') navigateImg(1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [product, gallery.length, navigateImg]);
 
   return (
     <AnimatePresence>
@@ -99,8 +119,43 @@ export default function ProductModal({ product, onClose, onAddToCart, onEnquire 
             </button>
 
             <div className="pm-media">
-              <img src={product.img} alt={product.name} />
-              {product.tag && <span className="pm-tag">{product.tag}</span>}
+              {gallery.length > 1 && (
+                <div className="pm-thumbs">
+                  {gallery.map((im, i) => (
+                    <button
+                      key={i}
+                      className={`pm-thumb${i === activeImg ? ' active' : ''}`}
+                      onClick={() => setActiveImg(i)}
+                      type="button"
+                    >
+                      <img src={im.url} alt={im.label || `${product.name} view ${i + 1}`} />
+                      {im.label && <span className="pm-thumb-label">{im.label}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className="pm-main-img-wrap">
+                {gallery.length > 1 && (
+                  <button type="button" className="pm-img-nav pm-img-prev" onClick={() => navigateImg(-1)} aria-label="Previous image">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18 9 12l6-6" /></svg>
+                  </button>
+                )}
+                <img
+                  src={gallery[activeImg]?.url}
+                  alt={product.name}
+                  className="pm-main-img"
+                />
+                {gallery.length > 1 && (
+                  <button type="button" className="pm-img-nav pm-img-next" onClick={() => navigateImg(1)} aria-label="Next image">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+                  </button>
+                )}
+                {product.tag && <span className="pm-tag">{product.tag}</span>}
+                {gallery.length > 1 && (
+                  <div className="pm-img-counter">{activeImg + 1} / {gallery.length}</div>
+                )}
+              </div>
             </div>
 
             <div className="pm-info">

@@ -31,6 +31,7 @@ export async function ensureSchema() {
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS buy_online BOOLEAN NOT NULL DEFAULT false`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS enquiry_clicks INTEGER NOT NULL DEFAULT 0`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS club TEXT NOT NULL DEFAULT ''`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS images JSONB NOT NULL DEFAULT '[]'::jsonb`;
 
       await sql`
         CREATE TABLE IF NOT EXISTS orders (

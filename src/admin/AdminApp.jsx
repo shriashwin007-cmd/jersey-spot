@@ -270,10 +270,12 @@ function BlurEditor({ item, onSave, onClose }) {
   );
 }
 
-// Batch upload — drag in several photos at once. Tag/category/price/in-stock
-// are shared across the batch (they're normally the same for a fresh drop of
-// kits), but each photo gets its own required name field since those differ.
+// Upload a single product with multiple photos (Amazon-style).
+// All images share the same name/tag/category/price — the first image
+// is the "primary" displayed on the carousel card, the rest show in the
+// product detail modal gallery.
 function UploadForm({ password, onAdded }) {
+  const [name, setName] = useState('');
   const [items, setItems] = useState([]);
   const [tag, setTag] = useState('');
   const [category, setCategory] = useState('embroidered');
@@ -296,7 +298,7 @@ function UploadForm({ password, onAdded }) {
         id: `${Date.now()}-${Math.random()}`,
         file: f,
         preview: URL.createObjectURL(f),
-        name: f.name.replace(/\.[^.]+$/, ''),
+        label: '',
         blurSpots: [],
       })),
     ]);
@@ -304,41 +306,53 @@ function UploadForm({ password, onAdded }) {
 
   const onDrop = (e) => { e.preventDefault(); setDragOver(false); addFiles(e.dataTransfer.files); };
   const removeItem = (id) => setItems((prev) => prev.filter((it) => it.id !== id));
-  const renameItem = (id, name) => setItems((prev) => prev.map((it) => (it.id === id ? { ...it, name } : it)));
+  const relabelItem = (id, label) => setItems((prev) => prev.map((it) => (it.id === id ? { ...it, label } : it)));
   const setBlurSpots = (id, spots) => setItems((prev) => prev.map((it) => (it.id === id ? { ...it, blurSpots: spots } : it)));
 
   const reset = () => {
-    setItems([]); setTag(''); setPrice('');
+    setName(''); setItems([]); setTag(''); setPrice('');
     if (inputRef.current) inputRef.current.value = '';
   };
 
   const submit = async (e) => {
     e.preventDefault();
     if (!items.length) { setError('Add at least one photo.'); return; }
-    if (items.some((it) => !it.name.trim())) { setError('Every photo needs a name.'); return; }
+    if (!name.trim()) { setError('Product name is required.'); return; }
     setError('');
     setUploading(true);
     try {
-      for (const it of items) {
+      let primaryImage = null;
+      const extraImages = [];
+
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
         const fileToUpload = await bakeBlurSpots(it.file, it.blurSpots);
         const uploaded = await uploadToCloudinary(fileToUpload);
-        const { product } = await api('/api/products', {
-          method: 'POST',
-          password,
-          body: JSON.stringify({
-            name: it.name,
-            tag,
-            category,
-            club,
-            price: Number(price) || 0,
-            inStock,
-            buyOnline,
-            imageUrl: uploaded.secure_url,
-            cloudinaryPublicId: uploaded.public_id,
-          }),
-        });
-        onAdded(product);
+        const imgEntry = { url: uploaded.secure_url, publicId: uploaded.public_id, label: it.label || '' };
+        if (i === 0) {
+          primaryImage = imgEntry;
+        } else {
+          extraImages.push(imgEntry);
+        }
       }
+
+      const { product } = await api('/api/products', {
+        method: 'POST',
+        password,
+        body: JSON.stringify({
+          name,
+          tag,
+          category,
+          club,
+          price: Number(price) || 0,
+          inStock,
+          buyOnline,
+          imageUrl: primaryImage.url,
+          cloudinaryPublicId: primaryImage.publicId,
+          images: extraImages,
+        }),
+      });
+      onAdded(product);
       reset();
     } catch (err) {
       setError(err.message);
@@ -349,7 +363,12 @@ function UploadForm({ password, onAdded }) {
 
   return (
     <form className="admin-upload-card" onSubmit={submit}>
-      <h2>Add jersey photos</h2>
+      <h2>Add jersey product</h2>
+
+      <label className="admin-field">
+        <span>Product name</span>
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Real Madrid Away" />
+      </label>
 
       <div
         className={`admin-drop${dragOver ? ' over' : ''}`}
@@ -360,15 +379,16 @@ function UploadForm({ password, onAdded }) {
       >
         <input ref={inputRef} type="file" accept="image/*" multiple hidden onChange={(e) => addFiles(e.target.files)} />
         <div className="admin-drop-icon">📷</div>
-        <div>Drag &amp; drop one or more photos, or click to browse</div>
+        <div>Drag &amp; drop one or more photos, or click to browse<br/><em style={{fontSize:'11px',opacity:0.6}}>First photo = main image. Add front, back, side views for a rich product page.</em></div>
       </div>
 
       {items.length > 0 && (
         <div className="admin-batch-list">
-          {items.map((it) => (
+          {items.map((it, idx) => (
             <div className="admin-batch-item" key={it.id}>
+              <span className="admin-batch-index">{idx === 0 ? '★' : idx + 1}</span>
               <img src={it.preview} alt="" />
-              <input value={it.name} onChange={(e) => renameItem(it.id, e.target.value)} placeholder="Name" />
+              <input value={it.label} onChange={(e) => relabelItem(it.id, e.target.value)} placeholder="Label (e.g. Front, Back, Side)" />
               <button
                 type="button"
                 className={`ghost admin-blur-btn${it.blurSpots.length ? ' has-spots' : ''}`}
@@ -385,7 +405,7 @@ function UploadForm({ password, onAdded }) {
 
       <div className="admin-field-row">
         <label className="admin-field">
-          <span>Tag <em>(applies to all above)</em></span>
+          <span>Tag</span>
           <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="e.g. Retro" />
         </label>
       </div>
@@ -422,7 +442,7 @@ function UploadForm({ password, onAdded }) {
       <button type="submit" disabled={uploading || !items.length}>
         {uploading
           ? `Uploading ${items.length} photo${items.length > 1 ? 's' : ''}…`
-          : `Upload & Add${items.length ? ` (${items.length})` : ''}`}
+          : `Upload Product${items.length ? ` (${items.length} photo${items.length > 1 ? 's' : ''})` : ''}`}
       </button>
 
       {blurEditId && (
@@ -445,22 +465,41 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
   const [price, setPrice] = useState(p.price);
   const [busy, setBusy] = useState(false);
   const [blurOpen, setBlurOpen] = useState(false);
+  const [blurImageIdx, setBlurImageIdx] = useState(null);
+  const addInputRef = useRef(null);
 
-  // Blur logos on a product that's ALREADY in the catalog: bake the spots onto
-  // its current image, upload the blurred version, and point the product at it
-  // (the API deletes the old Cloudinary asset).
+  // All images: primary + extras
+  const allImages = [
+    { url: p.image_url, publicId: p.cloudinary_public_id, label: 'Primary' },
+    ...((p.images || []).map((img, i) => ({ ...img, label: img.label || `Photo ${i + 2}` }))),
+  ];
+
   const saveBlur = async (spots) => {
     setBlurOpen(false);
     if (!spots.length) return;
     setBusy(true);
     try {
-      const file = await bakeBlurSpots(p.image_url, spots);
+      const target = allImages[blurImageIdx];
+      const file = await bakeBlurSpots(target.url, spots);
       const uploaded = await uploadToCloudinary(file);
-      const { product } = await api(`/api/products/${p.id}`, {
-        method: 'PUT', password,
-        body: JSON.stringify({ imageUrl: uploaded.secure_url, cloudinaryPublicId: uploaded.public_id }),
-      });
-      onUpdated(product);
+
+      if (blurImageIdx === 0) {
+        // Replacing primary image
+        const { product } = await api(`/api/products/${p.id}`, {
+          method: 'PUT', password,
+          body: JSON.stringify({ imageUrl: uploaded.secure_url, cloudinaryPublicId: uploaded.public_id }),
+        });
+        onUpdated(product);
+      } else {
+        // Replacing an extra image
+        const newImages = [...(p.images || [])];
+        newImages[blurImageIdx - 1] = { url: uploaded.secure_url, publicId: uploaded.public_id, label: target.label };
+        const { product } = await api(`/api/products/${p.id}`, {
+          method: 'PUT', password,
+          body: JSON.stringify({ images: newImages }),
+        });
+        onUpdated(product);
+      }
       alert('Logo blurred — the catalogue image is updated.');
     } catch (err) {
       alert(err.message);
@@ -516,7 +555,7 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
   };
 
   const del = async () => {
-    if (!confirm(`Delete "${p.name}"? This also removes it from Cloudinary.`)) return;
+    if (!confirm(`Delete "${p.name}"? This also removes all its images from Cloudinary.`)) return;
     setBusy(true);
     try {
       await api(`/api/products/${p.id}`, { method: 'DELETE', password });
@@ -527,10 +566,65 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
     }
   };
 
+  const removeImage = async (idx) => {
+    if (idx === 0) return;
+    if (!confirm('Remove this photo from the product?')) return;
+    setBusy(true);
+    try {
+      const newImages = (p.images || []).filter((_, i) => i !== idx - 1);
+      const updates = { images: newImages };
+      // If removing the primary image, promote the first extra to primary
+      // (this block only runs for idx > 0, so primary stays)
+      const { product } = await api(`/api/products/${p.id}`, {
+        method: 'PUT', password,
+        body: JSON.stringify(updates),
+      });
+      onUpdated(product);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const addImages = async (fileList) => {
+    const files = Array.from(fileList || []).filter((f) => f.type.startsWith('image/'));
+    if (!files.length) return;
+    setBusy(true);
+    try {
+      const newImages = [...(p.images || [])];
+      for (const f of files) {
+        const uploaded = await uploadToCloudinary(f);
+        newImages.push({ url: uploaded.secure_url, publicId: uploaded.public_id, label: f.name.replace(/\.[^.]+$/, '') });
+      }
+      const { product } = await api(`/api/products/${p.id}`, {
+        method: 'PUT', password,
+        body: JSON.stringify({ images: newImages }),
+      });
+      onUpdated(product);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className={`admin-row${p.in_stock ? '' : ' sold-out'}`} draggable {...dragHandlers}>
       <span className="admin-row-handle" title="Drag to reorder">⠿</span>
-      <img src={p.image_url} alt={p.name} className="admin-row-thumb" />
+      <div className="admin-row-thumbs">
+        {allImages.slice(0, 5).map((img, idx) => (
+          <div className={`admin-row-thumb-wrap${idx === 0 ? ' primary' : ''}`} key={idx}>
+            <img src={img.url} alt={img.label} className="admin-row-thumb" />
+            {allImages.length > 1 && (
+              <span className="admin-row-thumb-badge">{idx === 0 ? '★' : idx + 1}</span>
+            )}
+          </div>
+        ))}
+        {allImages.length > 5 && (
+          <div className="admin-row-thumb-wrap admin-row-thumb-more">+{allImages.length - 5}</div>
+        )}
+      </div>
       {editing ? (
         <div className="admin-row-edit">
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" />
@@ -550,6 +644,7 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
             {p.name}
             {!p.in_stock && <span className="admin-badge-soldout">Sold Out</span>}
             {p.buy_online && <span className="admin-badge-buyonline">Buy Online</span>}
+            {allImages.length > 1 && <span className="admin-badge-photos">{allImages.length} photos</span>}
           </div>
           <div className="admin-row-meta">{categoryLabel(p.category)}{p.club ? ` · ${p.club}` : ''} · {p.tag || '—'} · ₹{p.price}{p.enquiry_clicks > 0 ? ` · ${p.enquiry_clicks} enquiries` : ''}</div>
         </div>
@@ -568,16 +663,18 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
             <button className="ghost" disabled={busy} onClick={toggleBuyOnline}>
               {p.buy_online ? 'Disable Buy Online' : 'Enable Buy Online'}
             </button>
-            <button className="ghost" disabled={busy} onClick={() => setBlurOpen(true)}>{busy ? 'Working…' : 'Blur Logo'}</button>
+            <button className="ghost" disabled={busy} onClick={() => { setBlurImageIdx(0); setBlurOpen(true); }}>{busy ? 'Working…' : 'Blur Logo'}</button>
+            <button className="ghost" disabled={busy} onClick={() => addInputRef.current?.click()}>Add Photos</button>
             <button className="ghost" disabled={busy} onClick={() => setEditing(true)}>Edit</button>
             <button className="danger" disabled={busy} onClick={del}>Delete</button>
           </>
         )}
       </div>
+      <input ref={addInputRef} type="file" accept="image/*" multiple hidden onChange={(e) => addImages(e.target.files)} />
 
       {blurOpen && (
         <BlurEditor
-          item={{ preview: p.image_url, blurSpots: [] }}
+          item={{ preview: allImages[blurImageIdx]?.url || p.image_url, blurSpots: [] }}
           onSave={saveBlur}
           onClose={() => setBlurOpen(false)}
         />

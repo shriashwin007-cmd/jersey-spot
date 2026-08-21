@@ -572,9 +572,40 @@
 .pm-card { position: relative; width: 100%; max-width: 860px; max-height: 90vh; overflow: hidden; display: grid; grid-template-columns: 1.1fr 1fr; background: var(--bg-elev); border: 1px solid var(--border-strong); border-radius: var(--r-lg); box-shadow: var(--shadow-lg); }
 .pm-close { position: absolute; top: 14px; right: 14px; z-index: 2; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.5); border: 1px solid var(--border-strong); color: var(--text); display: grid; place-items: center; transition: border-color 0.2s, background 0.2s, color 0.2s; }
 .pm-close:hover { border-color: var(--gold-line); background: var(--gold-soft); color: var(--gold-bright); }
-.pm-media { position: relative; background: #000; display: flex; align-items: center; justify-content: center; min-height: 320px; }
-.pm-media img { width: 100%; height: 100%; max-height: 90vh; object-fit: cover; display: block; }
-.pm-tag { position: absolute; top: 14px; left: 14px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-bright); background: rgba(0,0,0,0.72); border: 1px solid var(--gold-line); padding: 5px 12px; border-radius: var(--r-pill); }
+.pm-media { position: relative; background: #000; display: flex; min-height: 320px; }
+.pm-main-img-wrap { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.pm-main-img { width: 100%; height: 100%; max-height: 90vh; object-fit: contain; display: block; transition: opacity 0.25s ease; }
+.pm-tag { position: absolute; top: 14px; left: 14px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-bright); background: rgba(0,0,0,0.72); border: 1px solid var(--gold-line); padding: 5px 12px; border-radius: var(--r-pill); z-index: 1; }
+.pm-img-counter { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 600; color: #fff; background: rgba(0,0,0,0.6); padding: 4px 12px; border-radius: var(--r-pill); z-index: 1; }
+.pm-img-nav {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.2);
+  color: #fff; display: grid; place-items: center;
+  transition: background 0.2s, border-color 0.2s; backdrop-filter: blur(4px);
+}
+.pm-img-nav:hover { background: rgba(0,0,0,0.8); border-color: var(--gold-line); }
+.pm-img-prev { left: 10px; }
+.pm-img-next { right: 10px; }
+.pm-thumbs {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 0 12px 12px; overflow-y: auto; flex-shrink: 0;
+  max-height: 100%;
+}
+.pm-thumb {
+  width: 56px; height: 56px; border-radius: 8px; overflow: hidden;
+  border: 2px solid transparent; background: none; padding: 0; cursor: pointer;
+  flex-shrink: 0; position: relative; transition: border-color 0.2s;
+}
+.pm-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pm-thumb.active { border-color: var(--gold); }
+.pm-thumb:hover { border-color: var(--gold-line); }
+.pm-thumb-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  font-size: 8px; font-weight: 700; color: #fff; text-align: center;
+  background: rgba(0,0,0,0.7); padding: 1px 2px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
 .pm-info { padding: 34px 30px; display: flex; flex-direction: column; overflow-y: auto; }
 .pm-cat { font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); }
 .pm-name { font-family: var(--font-display); font-size: 1.7rem; color: var(--text); margin: 10px 0 0; line-height: 1.15; }
@@ -588,10 +619,13 @@
 .pm-order-title { font-family: var(--font-display); font-size: 1.1rem; color: var(--text); margin: 4px 0 0; }
 @media (max-width: 720px) {
   .pm-card { grid-template-columns: 1fr; max-height: 92vh; overflow-y: auto; }
-  .pm-media { min-height: 0; max-height: 46vh; }
-  .pm-media img { max-height: 46vh; }
+  .pm-media { min-height: 0; max-height: 46vh; flex-direction: column; }
+  .pm-thumbs { flex-direction: row; padding: 8px 12px; overflow-x: auto; overflow-y: hidden; max-height: none; }
+  .pm-thumb { width: 48px; height: 48px; }
+  .pm-main-img { max-height: 40vh; }
   .pm-info { padding: 24px 22px; }
   .pm-name { font-size: 1.4rem; }
+  .pm-img-nav { width: 30px; height: 30px; }
 }
 
 /* ── Cart drawer ───────────────────────────────────────── */

@@ -11,12 +11,12 @@ import { SHOP, waLink } from '../config';
 // Static fallback — shown until the admin catalog has real entries, or if
 // the database isn't connected yet. The live site never breaks either way.
 const FALLBACK_KITS = [
-  { img: '/shop/shop-1.jpg', name: 'England Away', tag: 'Retro', category: 'embroidered', msg: 'Hi! I want the England Away jersey.' },
-  { img: '/shop/shop-2.jpg', name: 'Real Madrid Away', tag: 'Pink Edition', category: 'embroidered', msg: 'Hi! I want the Real Madrid pink away jersey.' },
-  { img: '/shop/shop-3.jpg', name: 'Portugal', tag: 'Black & Gold', category: 'embroidered', msg: 'Hi! I want the Portugal black & gold jersey.' },
-  { img: '/shop/shop-4.jpg', name: 'Inter Miami', tag: 'Home', category: 'printed', msg: 'Hi! I want the Inter Miami home jersey.' },
-  { img: '/shop/shop-5.jpg', name: 'Argentina', tag: '3-Star', category: 'printed', msg: 'Hi! I want the Argentina 3-star jersey.' },
-  { img: '/shop/shop-6.jpg', name: 'Real Madrid', tag: 'Retro Blue', category: 'embroidered', msg: 'Hi! I want the Real Madrid retro blue jersey.' },
+  { img: '/shop/shop-1.jpg', images: [], name: 'England Away', tag: 'Retro', category: 'embroidered', msg: 'Hi! I want the England Away jersey.' },
+  { img: '/shop/shop-2.jpg', images: [], name: 'Real Madrid Away', tag: 'Pink Edition', category: 'embroidered', msg: 'Hi! I want the Real Madrid pink away jersey.' },
+  { img: '/shop/shop-3.jpg', images: [], name: 'Portugal', tag: 'Black & Gold', category: 'embroidered', msg: 'Hi! I want the Portugal black & gold jersey.' },
+  { img: '/shop/shop-4.jpg', images: [], name: 'Inter Miami', tag: 'Home', category: 'printed', msg: 'Hi! I want the Inter Miami home jersey.' },
+  { img: '/shop/shop-5.jpg', images: [], name: 'Argentina', tag: '3-Star', category: 'printed', msg: 'Hi! I want the Argentina 3-star jersey.' },
+  { img: '/shop/shop-6.jpg', images: [], name: 'Real Madrid', tag: 'Retro Blue', category: 'embroidered', msg: 'Hi! I want the Real Madrid retro blue jersey.' },
 ];
 
 const FILTERS = [{ value: 'all', label: 'All' }, ...CATEGORIES.map((c) => ({ value: c.value, label: c.label }))];
@@ -51,6 +51,7 @@ export default function Gallery() {
             .map((p) => ({
               id: p.id,
               img: p.image_url,
+              images: p.images || [],
               name: p.name,
               tag: p.tag,
               category: p.category,
