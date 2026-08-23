@@ -23,7 +23,7 @@ function SizePicker({ sizes, selected, onSelect }) {
 }
 
 function OrderForm({ product, sizes, selSize, onSelectSize, onBack, onSent }) {
-  const [form, setForm] = useState({ name: '', phone: '', qty: '1', line: '', city: '', pincode: '', notes: '' });
+  const [form, setForm] = useState({ name: '', phone: '', qty: '1', line: '', city: '', pincode: '' });
   const [error, setError] = useState('');
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -49,7 +49,6 @@ function OrderForm({ product, sizes, selSize, onSelectSize, onBack, onSent }) {
       `Name: ${form.name}`,
       `Phone: ${form.phone}`,
       `Address: ${form.line}, ${form.city} - ${form.pincode}`,
-      form.notes ? `Notes (name/number, custom design…): ${form.notes}` : null,
     ].filter(Boolean);
     window.open(`https://wa.me/${SHOP.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`, '_blank', 'noopener');
     onSent();
@@ -76,7 +75,6 @@ function OrderForm({ product, sizes, selSize, onSelectSize, onBack, onSent }) {
         <label className="field"><span>City</span><input value={form.city} onChange={set('city')} /></label>
         <label className="field field-qty"><span>Pincode</span><input value={form.pincode} onChange={set('pincode')} /></label>
       </div>
-      <label className="field"><span>Notes <em>(size, name/number, custom design…)</em></span><textarea rows="2" value={form.notes} onChange={set('notes')} /></label>
 
       {error && <div className="admin-error">{error}</div>}
 
