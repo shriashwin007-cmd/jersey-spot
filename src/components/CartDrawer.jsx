@@ -26,14 +26,14 @@ function CartStep({ items, updateQty, removeItem, subtotal, onCheckout }) {
     <>
       <div className="cart-items">
         {items.map((it) => (
-          <div className="cart-item" key={it.productId}>
+          <div className="cart-item" key={it.key}>
             <img src={it.imageUrl} alt={it.name} />
             <div className="cart-item-info">
-              <div className="cart-item-name">{it.name}</div>
+              <div className="cart-item-name">{it.name}{it.size ? <span className="cart-item-size">{it.size}</span> : null}</div>
               <div className="cart-item-price">₹{it.price}</div>
             </div>
-            <QtyStepper qty={it.qty} onChange={(q) => updateQty(it.productId, q)} />
-            <button type="button" className="cart-item-remove" onClick={() => removeItem(it.productId)} aria-label={`Remove ${it.name}`}>✕</button>
+            <QtyStepper qty={it.qty} onChange={(q) => updateQty(it.key, q)} />
+            <button type="button" className="cart-item-remove" onClick={() => removeItem(it.key)} aria-label={`Remove ${it.name}`}>✕</button>
           </div>
         ))}
       </div>
@@ -69,7 +69,7 @@ function AddressStep({ subtotal, onBack, onPaid }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: items.map((it) => ({ productId: it.productId, qty: it.qty })),
+          items: items.map((it) => ({ productId: it.productId, qty: it.qty, size: it.size || '' })),
           customer: { name: form.name, phone: form.phone, email: form.email },
           address: { line: form.line, city: form.city, state: form.state, pincode: form.pincode },
         }),

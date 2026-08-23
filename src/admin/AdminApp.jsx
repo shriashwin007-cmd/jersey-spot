@@ -270,6 +270,64 @@ function BlurEditor({ item, onSave, onClose }) {
   );
 }
 
+const SIZE_PRESETS = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
+// Shared by the upload form and the product row editor. `enabled` toggles size
+// selection for the product; when on, sizes are picked from the presets or
+// typed in as custom values (e.g. numeric sizes, "Free Size").
+function SizesEditor({ enabled, onToggle, sizes, onChange }) {
+  const [custom, setCustom] = useState('');
+
+  const toggle = (s) => onChange(sizes.includes(s) ? sizes.filter((x) => x !== s) : [...sizes, s]);
+
+  const addCustom = () => {
+    const v = custom.trim().slice(0, 12);
+    if (!v) return;
+    if (!sizes.includes(v)) onChange([...sizes, v]);
+    setCustom('');
+  };
+
+  return (
+    <div className="admin-sizes">
+      <label className="admin-checkbox">
+        <input type="checkbox" checked={enabled} onChange={(e) => { onToggle(e.target.checked); if (!e.target.checked) onChange([]); }} />
+        Size selection <em>(customers must pick a size before ordering)</em>
+      </label>
+      {enabled && (
+        <>
+          <div className="admin-size-chips">
+            {SIZE_PRESETS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                className={`admin-size-chip${sizes.includes(s) ? ' on' : ''}`}
+                onClick={() => toggle(s)}
+              >
+                {s}
+              </button>
+            ))}
+            {sizes.filter((s) => !SIZE_PRESETS.includes(s)).map((s) => (
+              <button key={s} type="button" className="admin-size-chip on" onClick={() => toggle(s)} title="Remove this size">
+                {s} ✕
+              </button>
+            ))}
+          </div>
+          <div className="admin-size-custom">
+            <input
+              value={custom}
+              onChange={(e) => setCustom(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } }}
+              placeholder="Custom size (e.g. 40, Free Size)"
+              maxLength={12}
+            />
+            <button type="button" className="ghost" onClick={addCustom} disabled={!custom.trim()}>Add</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // Upload a single product with multiple photos (Amazon-style).
 // All images share the same name/tag/category/price — the first image
 // is the "primary" displayed on the carousel card, the rest show in the
@@ -283,6 +341,8 @@ function UploadForm({ password, onAdded }) {
   const [price, setPrice] = useState('');
   const [inStock, setInStock] = useState(true);
   const [buyOnline, setBuyOnline] = useState(false);
+  const [sizesOn, setSizesOn] = useState(false);
+  const [sizes, setSizes] = useState([]);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -311,6 +371,7 @@ function UploadForm({ password, onAdded }) {
 
   const reset = () => {
     setName(''); setItems([]); setTag(''); setPrice('');
+    setSizesOn(false); setSizes([]);
     if (inputRef.current) inputRef.current.value = '';
   };
 
@@ -318,6 +379,7 @@ function UploadForm({ password, onAdded }) {
     e.preventDefault();
     if (!items.length) { setError('Add at least one photo.'); return; }
     if (!name.trim()) { setError('Product name is required.'); return; }
+    if (sizesOn && !sizes.length) { setError('Pick at least one size, or turn size selection off.'); return; }
     setError('');
     setUploading(true);
     try {
@@ -347,6 +409,8 @@ function UploadForm({ password, onAdded }) {
           price: Number(price) || 0,
           inStock,
           buyOnline,
+          sizesEnabled: sizesOn,
+          sizes: sizesOn ? sizes : [],
           imageUrl: primaryImage.url,
           cloudinaryPublicId: primaryImage.publicId,
           images: extraImages,
@@ -437,6 +501,16 @@ function UploadForm({ password, onAdded }) {
         Allow instant "Buy Now" checkout <em>(ready-to-ship items only — no custom name/number needed)</em>
       </label>
 
+      <div className="admin-field admin-sizes-field">
+        <span>Sizes</span>
+        <SizesEditor
+          enabled={sizesOn}
+          onToggle={setSizesOn}
+          sizes={sizes}
+          onChange={setSizes}
+        />
+      </div>
+
       {error && <div className="admin-error">{error}</div>}
 
       <button type="submit" disabled={uploading || !items.length}>
@@ -463,6 +537,8 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
   const [category, setCategory] = useState(p.category);
   const [club, setClub] = useState(p.club || '');
   const [price, setPrice] = useState(p.price);
+  const [sizesOn, setSizesOn] = useState(!!p.sizes_enabled);
+  const [sizes, setSizes] = useState(p.sizes || []);
   const [busy, setBusy] = useState(false);
   const [blurOpen, setBlurOpen] = useState(false);
   const [blurImageIdx, setBlurImageIdx] = useState(null);
@@ -509,11 +585,16 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
   };
 
   const save = async () => {
+    if (sizesOn && !sizes.length) { alert('Pick at least one size, or turn size selection off.'); return; }
     setBusy(true);
     try {
       const { product } = await api(`/api/products/${p.id}`, {
         method: 'PUT', password,
-        body: JSON.stringify({ name, tag, category, club, price: Number(price) || 0 }),
+        body: JSON.stringify({
+          name, tag, category, club, price: Number(price) || 0,
+          sizesEnabled: sizesOn,
+          sizes: sizesOn ? sizes : [],
+        }),
       });
       onUpdated(product);
       setEditing(false);
@@ -637,6 +718,14 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
             {CLUBS.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
           </select>
           <input type="number" min="0" max="999999" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Price" />
+          <div className="admin-row-sizes-edit">
+            <SizesEditor
+              enabled={sizesOn}
+              onToggle={setSizesOn}
+              sizes={sizes}
+              onChange={setSizes}
+            />
+          </div>
         </div>
       ) : (
         <div className="admin-row-info">
@@ -644,9 +733,10 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
             {p.name}
             {!p.in_stock && <span className="admin-badge-soldout">Sold Out</span>}
             {p.buy_online && <span className="admin-badge-buyonline">Buy Online</span>}
+            {p.sizes_enabled && <span className="admin-badge-sizes">Sizes</span>}
             {allImages.length > 1 && <span className="admin-badge-photos">{allImages.length} photos</span>}
           </div>
-          <div className="admin-row-meta">{categoryLabel(p.category)}{p.club ? ` · ${p.club}` : ''} · {p.tag || '—'} · ₹{p.price}{p.enquiry_clicks > 0 ? ` · ${p.enquiry_clicks} enquiries` : ''}</div>
+          <div className="admin-row-meta">{categoryLabel(p.category)}{p.club ? ` · ${p.club}` : ''} · {p.tag || '—'} · ₹{p.price}{p.sizes_enabled && p.sizes?.length ? ` · Sizes: ${p.sizes.join('/')}` : ''}{p.enquiry_clicks > 0 ? ` · ${p.enquiry_clicks} enquiries` : ''}</div>
         </div>
       )}
       <div className="admin-row-actions">
@@ -665,7 +755,19 @@ function ProductRow({ p, password, onDeleted, onUpdated, dragHandlers }) {
             </button>
             <button className="ghost" disabled={busy} onClick={() => { setBlurImageIdx(0); setBlurOpen(true); }}>{busy ? 'Working…' : 'Blur Logo'}</button>
             <button className="ghost" disabled={busy} onClick={() => addInputRef.current?.click()}>Add Photos</button>
-            <button className="ghost" disabled={busy} onClick={() => setEditing(true)}>Edit</button>
+            <button
+              className="ghost"
+              disabled={busy}
+              onClick={() => {
+                // Re-sync from the latest product state before editing.
+                setName(p.name); setTag(p.tag); setCategory(p.category);
+                setClub(p.club || ''); setPrice(p.price);
+                setSizesOn(!!p.sizes_enabled); setSizes(p.sizes || []);
+                setEditing(true);
+              }}
+            >
+              Edit
+            </button>
             <button className="danger" disabled={busy} onClick={del}>Delete</button>
           </>
         )}
@@ -736,7 +838,7 @@ function OrdersTab({ password }) {
             {o.items.map((it, i) => (
               <div key={i} className="admin-order-item">
                 <img src={it.imageUrl} alt="" />
-                <span>{it.name} × {it.qty}</span>
+                <span>{it.name}{it.size ? ` · Size ${it.size}` : ''} × {it.qty}</span>
                 <span>₹{it.price * it.qty}</span>
               </div>
             ))}

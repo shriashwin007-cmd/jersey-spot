@@ -1,4 +1,4 @@
-import { sql, ensureSchema, checkAdminPassword, sanitizePrice, logActivity } from './_db.js';
+import { sql, ensureSchema, checkAdminPassword, sanitizePrice, sanitizeSizes, logActivity } from './_db.js';
 
 export default async function handler(req, res) {
   try {
@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
       const rows = await sql`
-        SELECT id, name, tag, category, club, price, image_url, cloudinary_public_id, sort_order, in_stock, buy_online, enquiry_clicks, created_at, images
+        SELECT id, name, tag, category, club, price, image_url, cloudinary_public_id, sort_order, in_stock, buy_online, enquiry_clicks, created_at, images, sizes_enabled, sizes
         FROM products
         ORDER BY sort_order ASC, created_at DESC
       `;
@@ -19,17 +19,18 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       if (!checkAdminPassword(req)) return res.status(401).json({ error: 'Unauthorized' });
 
-      const { name, tag = '', category = 'jersey', club = '', price = 0, inStock = true, buyOnline = false, imageUrl, cloudinaryPublicId, images = [] } = req.body || {};
+      const { name, tag = '', category = 'jersey', club = '', price = 0, inStock = true, buyOnline = false, imageUrl, cloudinaryPublicId, images = [], sizesEnabled = false, sizes = [] } = req.body || {};
       if (!name || !imageUrl || !cloudinaryPublicId) {
         return res.status(400).json({ error: 'name, imageUrl and cloudinaryPublicId are required' });
       }
 
       const [{ max }] = await sql`SELECT COALESCE(MAX(sort_order), 0) AS max FROM products`;
       const imagesJson = JSON.stringify(images);
+      const sizesJson = JSON.stringify(sanitizeSizes(sizes));
       const [row] = await sql`
-        INSERT INTO products (name, tag, category, club, price, image_url, cloudinary_public_id, sort_order, in_stock, buy_online, images)
-        VALUES (${name}, ${tag}, ${category}, ${club}, ${sanitizePrice(price)}, ${imageUrl}, ${cloudinaryPublicId}, ${max + 1}, ${!!inStock}, ${!!buyOnline}, ${imagesJson}::jsonb)
-        RETURNING id, name, tag, category, club, price, image_url, cloudinary_public_id, sort_order, in_stock, buy_online, enquiry_clicks, created_at, images
+        INSERT INTO products (name, tag, category, club, price, image_url, cloudinary_public_id, sort_order, in_stock, buy_online, images, sizes_enabled, sizes)
+        VALUES (${name}, ${tag}, ${category}, ${club}, ${sanitizePrice(price)}, ${imageUrl}, ${cloudinaryPublicId}, ${max + 1}, ${!!inStock}, ${!!buyOnline}, ${imagesJson}::jsonb, ${!!sizesEnabled}, ${sizesJson}::jsonb)
+        RETURNING id, name, tag, category, club, price, image_url, cloudinary_public_id, sort_order, in_stock, buy_online, enquiry_clicks, created_at, images, sizes_enabled, sizes
       `;
       await logActivity('product_created', `Added "${row.name}" (${row.category})`);
       return res.status(201).json({ product: row });

@@ -28,7 +28,7 @@ export default function Gallery() {
   const [preview, setPreview] = useState(null);
   const { addItem } = useCart();
 
-  const enquire = (item) => {
+  const enquire = (item, size = '') => {
     if (item.id) {
       fetch('/api/track-enquiry', {
         method: 'POST',
@@ -36,7 +36,8 @@ export default function Gallery() {
         body: JSON.stringify({ productId: item.id }),
       }).catch(() => {});
     }
-    window.open(waLink(item.msg), '_blank', 'noopener');
+    const text = size && item.sizesEnabled ? `${item.msg} My size: ${size}.` : item.msg;
+    window.open(waLink(text), '_blank', 'noopener');
   };
 
   useEffect(() => {
@@ -58,6 +59,8 @@ export default function Gallery() {
               club: p.club,
               price: p.price,
               buyOnline: p.buy_online,
+              sizesEnabled: !!p.sizes_enabled && Array.isArray(p.sizes) && p.sizes.length > 0,
+              sizes: p.sizes || [],
               msg: `Hi! I want the ${p.name}${p.tag ? ` (${p.tag})` : ''} jersey.`,
             }))
         );
@@ -171,7 +174,12 @@ export default function Gallery() {
             key={filter}
             items={filtered}
             onSelect={(item) => setPreview(item)}
-            onAddToCart={(item) => addItem({ id: item.id, name: item.name, price: item.price, img: item.img })}
+            onAddToCart={(item) => {
+              // Size-enabled products must go through the modal so the
+              // customer picks a size first.
+              if (item.sizesEnabled) { setPreview(item); return; }
+              addItem({ id: item.id, name: item.name, price: item.price, img: item.img });
+            }}
           />
         )}
 
@@ -191,8 +199,8 @@ export default function Gallery() {
       <ProductModal
         product={preview}
         onClose={() => setPreview(null)}
-        onAddToCart={(item) => addItem({ id: item.id, name: item.name, price: item.price, img: item.img })}
-        onEnquire={enquire}
+        onAddToCart={(item, size) => addItem({ id: item.id, name: item.name, price: item.price, img: item.img }, size)}
+        onEnquire={(item) => enquire(item)}
       />
       </section>
     </>

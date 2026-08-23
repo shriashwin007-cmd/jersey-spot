@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     if (!ids.length) return res.status(400).json({ error: 'Invalid cart items' });
 
     const products = await sql`
-      SELECT id, name, price, image_url, in_stock, buy_online
+      SELECT id, name, price, image_url, in_stock, buy_online, sizes_enabled, sizes
       FROM products
       WHERE id = ANY(${ids})
     `;
@@ -39,8 +39,15 @@ export default async function handler(req, res) {
       const qty = Math.max(1, Math.min(20, Math.trunc(Number(it.qty)) || 1));
       if (!p) return res.status(400).json({ error: `Product ${it.productId} no longer exists` });
       if (!p.in_stock || !p.buy_online) return res.status(400).json({ error: `${p.name} isn't available for online checkout right now` });
+      // Size must be one the admin actually enabled for this product.
+      let size = typeof it.size === 'string' ? it.size.trim().slice(0, 12) : '';
+      if (p.sizes_enabled && Array.isArray(p.sizes) && p.sizes.length) {
+        if (!p.sizes.includes(size)) return res.status(400).json({ error: `Please pick a valid size for ${p.name}` });
+      } else {
+        size = '';
+      }
       subtotal += p.price * qty;
-      lineItems.push({ productId: p.id, name: p.name, price: p.price, qty, imageUrl: p.image_url });
+      lineItems.push({ productId: p.id, name: p.name, price: p.price, qty, imageUrl: p.image_url, size });
     }
 
     const total = subtotal + SHIPPING_FEE;

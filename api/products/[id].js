@@ -1,4 +1,4 @@
-import { sql, ensureSchema, checkAdminPassword, sanitizePrice, logActivity } from '../_db.js';
+import { sql, ensureSchema, checkAdminPassword, sanitizePrice, sanitizeSizes, logActivity } from '../_db.js';
 import { destroyCloudinaryAsset } from '../_cloudinary.js';
 
 export default async function handler(req, res) {
@@ -12,10 +12,13 @@ export default async function handler(req, res) {
     if (!checkAdminPassword(req)) return res.status(401).json({ error: 'Unauthorized' });
 
     if (req.method === 'PUT') {
-      const { name, tag, category, club, price, sortOrder, inStock, buyOnline, imageUrl, cloudinaryPublicId, images } = req.body || {};
+      const { name, tag, category, club, price, sortOrder, inStock, buyOnline, imageUrl, cloudinaryPublicId, images, sizesEnabled, sizes } = req.body || {};
       const safePrice = price === undefined || price === null ? null : sanitizePrice(price);
       const safeInStock = inStock === undefined || inStock === null ? null : !!inStock;
       const safeBuyOnline = buyOnline === undefined || buyOnline === null ? null : !!buyOnline;
+      const safeSizesEnabled = sizesEnabled === undefined || sizesEnabled === null ? null : !!sizesEnabled;
+      // null (undefined in body) → keep existing sizes; array (even empty) → replace
+      const sizesJson = sizes === undefined ? null : JSON.stringify(sanitizeSizes(sizes));
       const newImageUrl = imageUrl || null;
       const newPublicId = cloudinaryPublicId || null;
 
@@ -41,9 +44,11 @@ export default async function handler(req, res) {
           buy_online = COALESCE(${safeBuyOnline}, buy_online),
           image_url = COALESCE(${newImageUrl}, image_url),
           cloudinary_public_id = COALESCE(${newPublicId}, cloudinary_public_id),
-          images = COALESCE(${imagesJson}::jsonb, images)
+          images = COALESCE(${imagesJson}::jsonb, images),
+          sizes_enabled = COALESCE(${safeSizesEnabled}, sizes_enabled),
+          sizes = COALESCE(${sizesJson}::jsonb, sizes)
         WHERE id = ${id}
-        RETURNING id, name, tag, category, club, price, image_url, cloudinary_public_id, sort_order, in_stock, buy_online, enquiry_clicks, created_at, images
+        RETURNING id, name, tag, category, club, price, image_url, cloudinary_public_id, sort_order, in_stock, buy_online, enquiry_clicks, created_at, images, sizes_enabled, sizes
       `;
       if (!row) return res.status(404).json({ error: 'Not found' });
       if (safeInStock !== null) {

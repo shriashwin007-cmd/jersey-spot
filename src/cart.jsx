@@ -20,26 +20,30 @@ export function CartProvider({ children }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items]);
 
-  const addItem = (product) => {
+  // Items are keyed by product+size so the same jersey in two sizes is two lines.
+  const keyOf = (productId, size) => `${productId}::${size || ''}`;
+
+  const addItem = (product, size = '') => {
+    const key = keyOf(product.id, size);
     setItems((prev) => {
-      const existing = prev.find((it) => it.productId === product.id);
+      const existing = prev.find((it) => it.key === key);
       if (existing) {
-        return prev.map((it) => (it.productId === product.id ? { ...it, qty: Math.min(20, it.qty + 1) } : it));
+        return prev.map((it) => (it.key === key ? { ...it, qty: Math.min(20, it.qty + 1) } : it));
       }
-      return [...prev, { productId: product.id, name: product.name, price: product.price, imageUrl: product.img, qty: 1 }];
+      return [...prev, { key, productId: product.id, name: product.name, price: product.price, imageUrl: product.img, qty: 1, size: size || '' }];
     });
     setOpen(true);
   };
 
-  const updateQty = (productId, qty) => {
+  const updateQty = (key, qty) => {
     setItems((prev) =>
       qty <= 0
-        ? prev.filter((it) => it.productId !== productId)
-        : prev.map((it) => (it.productId === productId ? { ...it, qty: Math.min(20, qty) } : it))
+        ? prev.filter((it) => it.key !== key)
+        : prev.map((it) => (it.key === key ? { ...it, qty: Math.min(20, qty) } : it))
     );
   };
 
-  const removeItem = (productId) => setItems((prev) => prev.filter((it) => it.productId !== productId));
+  const removeItem = (key) => setItems((prev) => prev.filter((it) => it.key !== key));
   const clear = () => setItems([]);
 
   const subtotal = useMemo(() => items.reduce((sum, it) => sum + it.price * it.qty, 0), [items]);

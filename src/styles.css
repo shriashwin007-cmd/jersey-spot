@@ -611,6 +611,17 @@
 .pm-name { font-family: var(--font-display); font-size: 1.7rem; color: var(--text); margin: 10px 0 0; line-height: 1.15; }
 .pm-price { font-family: var(--font-display); font-size: 1.7rem; font-weight: 800; color: var(--gold-bright); margin-top: 16px; }
 .pm-price-ask { font-size: 1.1rem; font-weight: 600; color: var(--text-muted); }
+.pm-sizes { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.pm-sizes-label { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.pm-size-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.pm-size-chip {
+  min-width: 44px; padding: 8px 12px; border-radius: var(--r-pill); cursor: pointer;
+  background: transparent; border: 1px solid var(--border-strong);
+  color: var(--text); font-size: 0.85rem; font-weight: 700;
+}
+.pm-size-chip:hover { border-color: var(--gold); }
+.pm-size-chip.active { background: var(--gold); border-color: var(--gold); color: #1a1205; }
+.pm-size-error { font-size: 0.82rem; color: #e05a4d; margin-top: 6px; }
 .pm-desc { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; margin: 18px 0 0; }
 .pm-actions { display: flex; flex-direction: column; gap: 12px; margin-top: auto; padding-top: 26px; }
 .pm-btn { width: 100%; justify-content: center; }
@@ -645,6 +656,11 @@
 .cart-item img { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
 .cart-item-info { flex: 1; min-width: 0; }
 .cart-item-name { font-size: 0.92rem; font-weight: 600; color: var(--text); }
+.cart-item-size {
+  display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 999px;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
+  color: var(--gold); border: 1px solid var(--gold); vertical-align: middle;
+}
 .cart-item-price { font-size: 0.85rem; color: var(--gold); margin-top: 2px; }
 .cart-qty { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-pill); padding: 4px 8px; }
 .cart-qty button { background: none; border: none; color: var(--text); font-size: 15px; width: 18px; }

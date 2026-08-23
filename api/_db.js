@@ -32,6 +32,8 @@ export async function ensureSchema() {
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS enquiry_clicks INTEGER NOT NULL DEFAULT 0`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS club TEXT NOT NULL DEFAULT ''`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS images JSONB NOT NULL DEFAULT '[]'::jsonb`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS sizes_enabled BOOLEAN NOT NULL DEFAULT false`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS sizes JSONB NOT NULL DEFAULT '[]'::jsonb`;
 
       await sql`
         CREATE TABLE IF NOT EXISTS orders (
@@ -91,4 +93,18 @@ export function sanitizePrice(value) {
   const n = Math.trunc(Number(value));
   if (!Number.isFinite(n) || n < 0) return 0;
   return Math.min(n, MAX_PRICE);
+}
+
+// Sizes are short display strings ("XS", "40", "Free Size"). Trim, drop empties,
+// cap count and length so a stray payload can't bloat the JSONB column.
+const MAX_SIZES = 16;
+const MAX_SIZE_LEN = 12;
+export function sanitizeSizes(value) {
+  if (!Array.isArray(value)) return [];
+  const cleaned = value
+    .map((s) => String(s).trim())
+    .filter(Boolean)
+    .slice(0, MAX_SIZES)
+    .map((s) => s.slice(0, MAX_SIZE_LEN));
+  return [...new Set(cleaned)];
 }

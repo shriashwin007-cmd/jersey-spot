@@ -2,7 +2,27 @@ import { useEffect, useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { SHOP } from '../config';
 
-function OrderForm({ product, onBack, onSent }) {
+function SizePicker({ sizes, selected, onSelect }) {
+  return (
+    <div className="pm-sizes">
+      <span className="pm-sizes-label">Select size</span>
+      <div className="pm-size-chips">
+        {sizes.map((s) => (
+          <button
+            key={s}
+            type="button"
+            className={`pm-size-chip${selected === s ? ' active' : ''}`}
+            onClick={() => onSelect(s)}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function OrderForm({ product, sizes, selSize, onSelectSize, onBack, onSent }) {
   const [form, setForm] = useState({ name: '', phone: '', qty: '1', line: '', city: '', pincode: '', notes: '' });
   const [error, setError] = useState('');
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -13,18 +33,23 @@ function OrderForm({ product, onBack, onSent }) {
       setError('Please fill in name, phone and full address.');
       return;
     }
+    if (sizes.length > 0 && !selSize) {
+      setError('Please pick a size.');
+      return;
+    }
     setError('');
     const lines = [
       `Hi ${SHOP.name}! I'd like to buy this:`,
       '',
       `${product.name}${product.tag ? ` (${product.tag})` : ''}`,
       `Quantity: ${form.qty}`,
+      selSize ? `Size: ${selSize}` : null,
       product.price ? `Price: ₹${product.price} each` : null,
       '',
       `Name: ${form.name}`,
       `Phone: ${form.phone}`,
       `Address: ${form.line}, ${form.city} - ${form.pincode}`,
-      form.notes ? `Notes (size / name / number): ${form.notes}` : null,
+      form.notes ? `Notes (name/number, custom design…): ${form.notes}` : null,
     ].filter(Boolean);
     window.open(`https://wa.me/${SHOP.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`, '_blank', 'noopener');
     onSent();
@@ -34,6 +59,12 @@ function OrderForm({ product, onBack, onSent }) {
     <form className="pm-order-form" onSubmit={send}>
       <button type="button" className="cart-back" onClick={onBack}>← Back</button>
       <h4 className="pm-order-title">Delivery details for {product.name}</h4>
+
+      {sizes.length > 0 && (
+        <div className="field">
+          <SizePicker sizes={sizes} selected={selSize} onSelect={(s) => { onSelectSize(s); setError(''); }} />
+        </div>
+      )}
 
       <div className="field-row">
         <label className="field"><span>Your name</span><input value={form.name} onChange={set('name')} placeholder="e.g. Arjun" /></label>
@@ -60,11 +91,16 @@ function OrderForm({ product, onBack, onSent }) {
 }
 
 // Amazon-style product detail modal with multi-image gallery.
-// `product` shape: { img, images: [{url, label}...], name, tag, category, price, ... }
+// `product` shape: { img, images: [{url, label}...], name, tag, category, price, sizesEnabled, sizes, ... }
 export default function ProductModal({ product, onClose, onAddToCart, onEnquire }) {
   const [added, setAdded] = useState(false);
   const [step, setStep] = useState('view');
   const [activeImg, setActiveImg] = useState(0);
+  const [selSize, setSelSize] = useState('');
+  const [sizeError, setSizeError] = useState(false);
+
+  // Sizes only apply when the admin enabled them AND picked at least one.
+  const sizes = product?.sizesEnabled && Array.isArray(product.sizes) ? product.sizes : [];
 
   const gallery = product
     ? [{ url: product.img, label: '' }, ...((product.images || []).map((im) => ({ url: im.url, label: im.label || '' })))]
@@ -74,11 +110,20 @@ export default function ProductModal({ product, onClose, onAddToCart, onEnquire 
     setAdded(false);
     setStep('view');
     setActiveImg(0);
+    setSelSize('');
+    setSizeError(false);
     if (!product) return;
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [product, onClose]);
+
+  // Returns true when a valid size is chosen (or none is needed).
+  const requireSize = () => {
+    if (sizes.length === 0 || selSize) { setSizeError(false); return true; }
+    setSizeError(true);
+    return false;
+  };
 
   const navigateImg = useCallback((dir) => {
     if (gallery.length <= 1) return;
@@ -160,7 +205,14 @@ export default function ProductModal({ product, onClose, onAddToCart, onEnquire 
 
             <div className="pm-info">
               {step === 'order' && (
-                <OrderForm product={product} onBack={() => setStep('view')} onSent={() => setStep('sent')} />
+                <OrderForm
+                  product={product}
+                  sizes={sizes}
+                  selSize={selSize}
+                  onSelectSize={setSelSize}
+                  onBack={() => setStep('view')}
+                  onSent={() => setStep('sent')}
+                />
               )}
 
               {step === 'sent' && (
@@ -182,24 +234,43 @@ export default function ProductModal({ product, onClose, onAddToCart, onEnquire 
                     <div className="pm-price pm-price-ask">Price on request</div>
                   )}
 
+                  {sizes.length > 0 && (
+                    <>
+                      <SizePicker sizes={sizes} selected={selSize} onSelect={(s) => { setSelSize(s); setSizeError(false); }} />
+                      {sizeError && <div className="pm-size-error">Please pick a size first.</div>}
+                    </>
+                  )}
+
                   <p className="pm-desc">
                     Tell us the size, address and quantity and we'll confirm it right away on WhatsApp — no online payment needed.
                   </p>
 
                   <div className="pm-actions">
-                    <button type="button" className="btn btn-gold pm-btn" onClick={() => setStep('order')}>
+                    <button
+                      type="button"
+                      className="btn btn-gold pm-btn"
+                      onClick={() => { if (requireSize()) setStep('order'); }}
+                    >
                       Buy Now
                     </button>
                     {product.buyOnline && (
                       <button
                         type="button"
                         className={`btn btn-ghost pm-btn${added ? ' pm-added' : ''}`}
-                        onClick={() => { onAddToCart(product); setAdded(true); }}
+                        onClick={() => {
+                          if (!requireSize()) return;
+                          onAddToCart(product, selSize);
+                          setAdded(true);
+                        }}
                       >
                         {added ? '✓ Added to cart' : 'Add to Cart'}
                       </button>
                     )}
-                    <button type="button" className="btn btn-whatsapp pm-btn" onClick={() => onEnquire(product)}>
+                    <button
+                      type="button"
+                      className="btn btn-whatsapp pm-btn"
+                      onClick={() => { if (!requireSize()) return; onEnquire(product, selSize); }}
+                    >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347" />
                       </svg>
