@@ -475,7 +475,7 @@ function UploadForm({ password, onAdded }) {
       </div>
       <div className="admin-field-row">
         <label className="admin-field">
-          <span>Category</span>
+          <span>Jersey Type <em>(sets its catalog automatically)</em></span>
           <select value={category} onChange={(e) => setCategory(e.target.value)}>
             {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>

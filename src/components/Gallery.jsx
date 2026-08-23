@@ -19,11 +19,51 @@ const FALLBACK_KITS = [
   { img: '/shop/shop-6.jpg', images: [], name: 'Real Madrid', tag: 'Retro Blue', category: 'embroidered', msg: 'Hi! I want the Real Madrid retro blue jersey.' },
 ];
 
-const FILTERS = [{ value: 'all', label: 'All' }, ...CATEGORIES.map((c) => ({ value: c.value, label: c.label }))];
+// Jersey types get their own dedicated catalogs; everything else stays behind
+// the filter tabs below.
+const SUB_CATEGORY = 'printed';      // "Sublimation Jersey"
+const EMB_CATEGORY = 'embroidered';  // "Embroidery Jersey"
+const GEAR_FILTERS = [
+  { value: 'all', label: 'All' },
+  ...CATEGORIES.filter((c) => c.value !== SUB_CATEGORY && c.value !== EMB_CATEGORY),
+];
+
+// One auto-categorized catalog block: whatever the admin uploads with this
+// jersey type lands here — no manual assignment needed anywhere.
+function CatalogSection({ id, eyebrow, title, lead, emptyText, items, clubFilter, onSelect, onAddToCart }) {
+  return (
+    <div className="catalog-section" id={id}>
+      <motion.div
+        className="gallery-head"
+        initial={{ opacity: 0, y: 34 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-80px' }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <span className="eyebrow">{eyebrow}</span>
+        <h2 className="section-title">{title}</h2>
+        <p className="section-lead">{lead}</p>
+      </motion.div>
+
+      {items.length === 0 ? (
+        <div className="gallery-empty">
+          {clubFilter ? `No ${clubFilter} kits here right now.` : emptyText}
+        </div>
+      ) : (
+        <DomeSlider
+          key={`sub-${clubFilter || 'all'}`}
+          items={items}
+          onSelect={onSelect}
+          onAddToCart={onAddToCart}
+        />
+      )}
+    </div>
+  );
+}
 
 export default function Gallery() {
   const [kits, setKits] = useState(FALLBACK_KITS);
-  const [filter, setFilter] = useState('all');
+  const [gearFilter, setGearFilter] = useState('all');
   const [clubFilter, setClubFilter] = useState(null);
   const [preview, setPreview] = useState(null);
   const { addItem } = useCart();
@@ -69,9 +109,26 @@ export default function Gallery() {
     return () => { cancelled = true; };
   }, []);
 
-  const filtered = useMemo(
-    () => kits.filter((k) => (filter === 'all' || k.category === filter) && (!clubFilter || k.club === clubFilter)),
-    [kits, filter, clubFilter]
+  const clubMatched = useMemo(
+    () => kits.filter((k) => !clubFilter || k.club === clubFilter),
+    [kits, clubFilter]
+  );
+
+  const addToCartOrOpen = (item) => {
+    // Size-enabled products must go through the modal so the
+    // customer picks a size first.
+    if (item.sizesEnabled) { setPreview(item); return; }
+    addItem({ id: item.id, name: item.name, price: item.price, img: item.img });
+  };
+
+  const subItems = useMemo(() => clubMatched.filter((k) => k.category === SUB_CATEGORY), [clubMatched]);
+  const embItems = useMemo(() => clubMatched.filter((k) => k.category === EMB_CATEGORY), [clubMatched]);
+  const gearItems = useMemo(
+    () => clubMatched.filter(
+      (k) => k.category !== SUB_CATEGORY && k.category !== EMB_CATEGORY &&
+        (gearFilter === 'all' || k.category === gearFilter)
+    ),
+    [clubMatched, gearFilter]
   );
 
   return (
@@ -98,7 +155,7 @@ export default function Gallery() {
                 <motion.button
                   key={c.id}
                   role="tab"
-                  aria-pressed={active}
+                  aria-selected={active}
                   className={`club-card hoverable${active ? ' active' : ''}`}
                   onClick={() => {
                     setClubFilter((cur) => (cur === c.name ? null : c.name));
@@ -130,27 +187,13 @@ export default function Gallery() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
           <span className="eyebrow">In Store Now</span>
-          <h2 className="section-title">Latest <span className="g">kits</span> on the wall</h2>
+          <h2 className="section-title">Two ways to get <span className="g">kitted</span></h2>
           <p className="section-lead">
-            Drag or tap through what's hanging in the shop right now. See more on{' '}
+            Every kit lands in its catalog automatically by jersey type. See more on{' '}
             <a href={SHOP.instagram} target="_blank" rel="noreferrer" className="gallery-ig hoverable">{SHOP.instagramHandle}</a>
             {' '}— or message us for a kit you don't see here.
           </p>
         </motion.div>
-
-        <div className="gallery-filters" role="tablist" aria-label="Filter by category">
-          {FILTERS.map((f) => (
-            <button
-              key={f.value}
-              role="tab"
-              aria-selected={filter === f.value}
-              className={`gallery-filter-btn hoverable${filter === f.value ? ' active' : ''}`}
-              onClick={() => setFilter(f.value)}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
 
         <AnimatePresence>
           {clubFilter && (
@@ -167,21 +210,72 @@ export default function Gallery() {
           )}
         </AnimatePresence>
 
-        {filtered.length === 0 ? (
-          <div className="gallery-empty">Nothing in this category yet — message us, we've probably still got it.</div>
-        ) : (
-          <DomeSlider
-            key={filter}
-            items={filtered}
-            onSelect={(item) => setPreview(item)}
-            onAddToCart={(item) => {
-              // Size-enabled products must go through the modal so the
-              // customer picks a size first.
-              if (item.sizesEnabled) { setPreview(item); return; }
-              addItem({ id: item.id, name: item.name, price: item.price, img: item.img });
-            }}
-          />
-        )}
+        <CatalogSection
+          id="catalog-sublimation"
+          eyebrow="Sublimation Jersey Catalog"
+          title={<>Sublimation <span className="g">jerseys</span></>}
+          lead="Crisp sublimation & heat-press printing — lightweight, breathable and ready for match day."
+          emptyText="No sublimation jerseys yet — message us, we've probably still got one."
+          items={subItems}
+          clubFilter={clubFilter}
+          onSelect={(item) => setPreview(item)}
+          onAddToCart={addToCartOrOpen}
+        />
+
+        <CatalogSection
+          id="catalog-embroidery"
+          eyebrow="Embroidery Jersey Catalog"
+          title={<>Embroidery <span className="g">jerseys</span></>}
+          lead="Names, numbers and crests stitched in-house for a premium, pro-club finish."
+          emptyText="No embroidery jerseys yet — message us, we've probably still got one."
+          items={embItems}
+          clubFilter={clubFilter}
+          onSelect={(item) => setPreview(item)}
+          onAddToCart={addToCartOrOpen}
+        />
+
+        <div className="catalog-section" id="catalog-gear">
+          <motion.div
+            className="gallery-head"
+            initial={{ opacity: 0, y: 34 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <span className="eyebrow">Complete The Kit</span>
+            <h2 className="section-title">Everything <span className="g">else</span> on the wall</h2>
+            <p className="section-lead">Sets, boots, balls and all the extras to round out your kit.</p>
+          </motion.div>
+
+          {GEAR_FILTERS.length > 2 && (
+            <div className="gallery-filters" role="tablist" aria-label="Filter gear by category">
+              {GEAR_FILTERS.map((f) => (
+                <button
+                  key={f.value}
+                  role="tab"
+                  aria-selected={gearFilter === f.value}
+                  className={`gallery-filter-btn hoverable${gearFilter === f.value ? ' active' : ''}`}
+                  onClick={() => setGearFilter(f.value)}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {gearItems.length === 0 ? (
+            <div className="gallery-empty">
+              {clubFilter ? `No ${clubFilter} gear here right now.` : 'Nothing in this category yet — message us, we\'ve probably still got it.'}
+            </div>
+          ) : (
+            <DomeSlider
+              key={`gear-${clubFilter || 'all'}-${gearFilter}`}
+              items={gearItems}
+              onSelect={(item) => setPreview(item)}
+              onAddToCart={addToCartOrOpen}
+            />
+          )}
+        </div>
 
         <motion.div
           className="gallery-cta"
